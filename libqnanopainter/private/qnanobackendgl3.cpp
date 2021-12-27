@@ -1,3 +1,4 @@
+// clang-format off
 #include "qnanobackendgl3.h"
 
 #ifdef Q_OS_WIN
@@ -25,17 +26,17 @@ const QString QNanoBackendGL3::backendName()
 
 NVGcontext* QNanoBackendGL3::nvgCreate(int flags)
 {
-    return nvgCreateGL3(flags);
+    return nvgCreate(flags);
 }
 
 void QNanoBackendGL3::nvgDelete(NVGcontext* nvgCtx)
 {
-    nvgDeleteGL3(nvgCtx);
+    nvgDelete(nvgCtx);
 }
 
 int QNanoBackendGL3::nvglCreateImageFromHandle(NVGcontext* ctx, GLuint textureId, int w, int h, int imageFlags)
 {
-    return nvglCreateImageFromHandleGL3(ctx, textureId, w, h, imageFlags);
+    return nvglCreateImageFromHandle(ctx, textureId, w, h, imageFlags);
 }
 
 NVGparams *QNanoBackendGL3::internalParams(NVGcontext* nvgCtx) {

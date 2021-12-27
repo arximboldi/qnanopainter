@@ -1,21 +1,8 @@
 //
+// Copyright (c) 2020 Stylus Labs - see LICENSE.txt
+//   based on nanovg:
 // Copyright (c) 2013 Mikko Mononen memon@inside.org
 //
-// This software is provided 'as-is', without any express or implied
-// warranty.  In no event will the authors be held liable for any damages
-// arising from the use of this software.
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-// 1. The origin of this software must not be misrepresented; you must not
-//    claim that you wrote the original software. If you use this software
-//    in a product, an acknowledgment in the product documentation would be
-//    appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//    misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
-//
-
 #ifndef NANOVG_H
 #define NANOVG_H
 
@@ -33,148 +20,138 @@ extern "C" {
 typedef struct NVGcontext NVGcontext;
 
 struct NVGcolor {
-	union {
-		float rgba[4];
-		struct {
-			float r,g,b,a;
-		};
-	};
+  union {
+    unsigned int c;
+    unsigned char rgba[4];  //float rgba[4];
+    struct { unsigned char r,g,b,a; };  //struct { float r,g,b,a; };
+  };
 };
 typedef struct NVGcolor NVGcolor;
 
 struct NVGpaint {
-	float xform[6];
-	float extent[2];
-	float radius;
-	float feather;
-	NVGcolor innerColor;
-	NVGcolor outerColor;
-	int image;
+  float xform[6];
+  float extent[2];
+  float radius;
+  float feather;
+  NVGcolor innerColor;
+  NVGcolor outerColor;
+  int image;
 };
 typedef struct NVGpaint NVGpaint;
 
 enum NVGwinding {
-	NVG_CCW = 1,			// Winding for solid shapes
-	NVG_CW = 2,				// Winding for holes
+  NVG_AUTOW = 0,    // Don't change path winding.
+  NVG_CCW = 1,			// Force counterclockwise winding.
+  NVG_CW = 2,				// Force clockwise winding.
 };
 
 enum NVGsolidity {
-	NVG_SOLID = 1,			// CCW
-	NVG_HOLE = 2,			// CW
+  NVG_SOLID = NVG_CCW,
+  NVG_HOLE = NVG_CW,
+};
+
+enum NVGfillRule {
+  NVG_NONZERO,
+  NVG_EVENODD,
 };
 
 enum NVGlineCap {
-	NVG_BUTT,
-	NVG_ROUND,
-	NVG_SQUARE,
-	NVG_BEVEL,
-	NVG_MITER,
+  NVG_BUTT,
+  NVG_ROUND,
+  NVG_SQUARE,
+  NVG_BEVEL,
+  NVG_MITER,
 };
 
 enum NVGalign {
-	// Horizontal align
-	NVG_ALIGN_LEFT 		= 1<<0,	// Default, align text horizontally to left.
-	NVG_ALIGN_CENTER 	= 1<<1,	// Align text horizontally to center.
-	NVG_ALIGN_RIGHT 	= 1<<2,	// Align text horizontally to right.
-	// Vertical align
-	NVG_ALIGN_TOP 		= 1<<3,	// Align text vertically to top.
-	NVG_ALIGN_MIDDLE	= 1<<4,	// Align text vertically to middle.
-	NVG_ALIGN_BOTTOM	= 1<<5,	// Align text vertically to bottom.
-	NVG_ALIGN_BASELINE	= 1<<6, // Default, align text vertically to baseline.
+  // Horizontal align
+  NVG_ALIGN_LEFT 		= 1<<0,	// Default, align text horizontally to left.
+  NVG_ALIGN_CENTER 	= 1<<1,	// Align text horizontally to center.
+  NVG_ALIGN_RIGHT 	= 1<<2,	// Align text horizontally to right.
+  // Vertical align
+  NVG_ALIGN_TOP 		= 1<<3,	// Align text vertically to top.
+  NVG_ALIGN_MIDDLE	= 1<<4,	// Align text vertically to middle.
+  NVG_ALIGN_BOTTOM	= 1<<5,	// Align text vertically to bottom.
+  NVG_ALIGN_BASELINE	= 1<<6, // Default, align text vertically to baseline.
 };
 
 enum NVGblendFactor {
-	NVG_ZERO = 1<<0,
-	NVG_ONE = 1<<1,
-	NVG_SRC_COLOR = 1<<2,
-	NVG_ONE_MINUS_SRC_COLOR = 1<<3,
-	NVG_DST_COLOR = 1<<4,
-	NVG_ONE_MINUS_DST_COLOR = 1<<5,
-	NVG_SRC_ALPHA = 1<<6,
-	NVG_ONE_MINUS_SRC_ALPHA = 1<<7,
-	NVG_DST_ALPHA = 1<<8,
-	NVG_ONE_MINUS_DST_ALPHA = 1<<9,
-	NVG_SRC_ALPHA_SATURATE = 1<<10,
+  NVG_ZERO = 1<<0,
+  NVG_ONE = 1<<1,
+  NVG_SRC_COLOR = 1<<2,
+  NVG_ONE_MINUS_SRC_COLOR = 1<<3,
+  NVG_DST_COLOR = 1<<4,
+  NVG_ONE_MINUS_DST_COLOR = 1<<5,
+  NVG_SRC_ALPHA = 1<<6,
+  NVG_ONE_MINUS_SRC_ALPHA = 1<<7,
+  NVG_DST_ALPHA = 1<<8,
+  NVG_ONE_MINUS_DST_ALPHA = 1<<9,
+  NVG_SRC_ALPHA_SATURATE = 1<<10,
 };
 
 enum NVGcompositeOperation {
-	NVG_SOURCE_OVER,
-	NVG_SOURCE_IN,
-	NVG_SOURCE_OUT,
-	NVG_ATOP,
-	NVG_DESTINATION_OVER,
-	NVG_DESTINATION_IN,
-	NVG_DESTINATION_OUT,
-	NVG_DESTINATION_ATOP,
-	NVG_LIGHTER,
-	NVG_COPY,
-	NVG_XOR,
+  NVG_SOURCE_OVER,
+  NVG_SOURCE_IN,
+  NVG_SOURCE_OUT,
+  NVG_ATOP,
+  NVG_DESTINATION_OVER,
+  NVG_DESTINATION_IN,
+  NVG_DESTINATION_OUT,
+  NVG_DESTINATION_ATOP,
+  NVG_LIGHTER,
+  NVG_COPY,
+  NVG_XOR,
 };
 
 struct NVGcompositeOperationState {
-	int srcRGB;
-	int dstRGB;
-	int srcAlpha;
-	int dstAlpha;
+  int srcRGB;
+  int dstRGB;
+  int srcAlpha;
+  int dstAlpha;
 };
 typedef struct NVGcompositeOperationState NVGcompositeOperationState;
 
 struct NVGglyphPosition {
-	const char* str;	// Position of the glyph in the input string.
-	float x;			// The x-coordinate of the logical glyph position.
-	float minx, maxx;	// The bounds of the glyph shape.
+  const char* str;	// Position of the glyph in the input string.
+  float x;			// The x-coordinate of the logical glyph position.
+  float minx, maxx;	// The bounds of the glyph shape.
 };
 typedef struct NVGglyphPosition NVGglyphPosition;
 
 struct NVGtextRow {
-	const char* start;	// Pointer to the input text where the row starts.
-	const char* end;	// Pointer to the input text where the row ends (one past the last character).
-	const char* next;	// Pointer to the beginning of the next row.
-	float width;		// Logical width of the row.
-	float minx, maxx;	// Actual bounds of the row. Logical with and bounds can differ because of kerning and some parts over extending.
+  const char* start;	// Pointer to the input text where the row starts.
+  const char* end;	// Pointer to the input text where the row ends (one past the last character).
+  const char* next;	// Pointer to the beginning of the next row.
+  float width;		// Logical width of the row.
+  float minx, maxx;	// Actual bounds of the row. Logical with and bounds can differ because of kerning and some parts over extending.
 };
 typedef struct NVGtextRow NVGtextRow;
 
-struct NVGdrawDebug {
-	int drawCallCount;
-	int fillTriCount;
-	int strokeTriCount;
-	int textTriCount;
-};
-typedef struct NVGdrawDebug NVGdrawDebug;
-
 enum NVGimageFlags {
-    NVG_IMAGE_GENERATE_MIPMAPS	= 1<<0,     // Generate mipmaps during creation of the image.
-	NVG_IMAGE_REPEATX			= 1<<1,		// Repeat image in X direction.
-	NVG_IMAGE_REPEATY			= 1<<2,		// Repeat image in Y direction.
-	NVG_IMAGE_FLIPY				= 1<<3,		// Flips (inverses) image in Y direction when rendered.
-	NVG_IMAGE_PREMULTIPLIED		= 1<<4,		// Image data has premultiplied alpha.
-	NVG_IMAGE_NEAREST			= 1<<5,		// Image interpolation is Nearest instead Linear
+  NVG_IMAGE_GENERATE_MIPMAPS = 1<<0,  // Generate mipmaps during creation of the image.
+  NVG_IMAGE_REPEATX          = 1<<1,  // Repeat image in X direction.
+  NVG_IMAGE_REPEATY          = 1<<2,  // Repeat image in Y direction.
+  NVG_IMAGE_FLIPY            = 1<<3,  // Flips (inverses) image in Y direction when rendered.
+  NVG_IMAGE_PREMULTIPLIED    = 1<<4,  // Image data has premultiplied alpha.
+  NVG_IMAGE_NEAREST          = 1<<5,  // Image interpolation is Nearest instead Linear
+  NVG_IMAGE_SRGB             = 1<<6,  // Create SRGB texture for image - for use with SRGB framebuffer
 };
 
 // Begin drawing a new frame
 // Calls to nanovg drawing API should be wrapped in nvgBeginFrame() & nvgEndFrame()
 // nvgBeginFrame() defines the size of the window to render to in relation currently
-// set viewport (i.e. glViewport on GL backends). Device pixel ration allows to
+// set viewport (i.e. glViewport on GL backends). Device pixel ratio allows to
 // control the rendering on Hi-DPI devices.
 // For example, GLFW returns two dimension for an opened window: window size and
 // frame buffer size. In that case you would set windowWidth/Height to the window size
 // devicePixelRatio to: frameBufferWidth / windowWidth.
 void nvgBeginFrame(NVGcontext* ctx, float windowWidth, float windowHeight, float devicePixelRatio);
 
-// Begin drawing a new frame
-// Same as nvgBeginFrame() except instead of drawing from point (0,0),
-// allows drawing from point (windowX, windowY)
-void nvgBeginFrameAt(NVGcontext* ctx, float windowX, float windowY, float windowWidth, float windowHeight, float devicePixelRatio);
-
 // Cancels drawing the current frame.
 void nvgCancelFrame(NVGcontext* ctx);
 
 // Ends drawing flushing remaining render state.
 void nvgEndFrame(NVGcontext* ctx);
-
-// Returns drawing debug information.
-NVGdrawDebug nvgDrawDebug(NVGcontext* ctx);
 
 //
 // Composite operation
@@ -203,13 +180,11 @@ NVGcolor nvgRGB(unsigned char r, unsigned char g, unsigned char b);
 // Returns a color value from red, green, blue values. Alpha will be set to 1.0f.
 NVGcolor nvgRGBf(float r, float g, float b);
 
-
 // Returns a color value from red, green, blue and alpha values.
 NVGcolor nvgRGBA(unsigned char r, unsigned char g, unsigned char b, unsigned char a);
 
 // Returns a color value from red, green, blue and alpha values.
 NVGcolor nvgRGBAf(float r, float g, float b, float a);
-
 
 // Linearly interpolates from color c0 to c1, and returns resulting color value.
 NVGcolor nvgLerpRGBA(NVGcolor c0, NVGcolor c1, float u);
@@ -227,6 +202,9 @@ NVGcolor nvgHSL(float h, float s, float l);
 // Returns color value specified by hue, saturation and lightness and alpha.
 // HSL values are all in range [0..1], alpha in range [0..255]
 NVGcolor nvgHSLA(float h, float s, float l, unsigned char a);
+
+// convert a single color channel (R,G,B) from sRGB color space to linear RGB color space
+float nvgSRGBtoLinear(unsigned char c);
 
 //
 // State Handling
@@ -257,6 +235,9 @@ void nvgReset(NVGcontext* ctx);
 // Sets whether to draw antialias for nvgStroke() and nvgFill(). It's enabled by default.
 void nvgShapeAntiAlias(NVGcontext* ctx, int enabled);
 
+// Shape fill winding rule: non-zero (default) or even-odd.
+void nvgFillRule(NVGcontext* ctx, int rule);
+
 // Sets current stroke style to a solid color.
 void nvgStrokeColor(NVGcontext* ctx, NVGcolor color);
 
@@ -284,6 +265,13 @@ void nvgLineCap(NVGcontext* ctx, int cap);
 // Can be one of NVG_MITER (default), NVG_ROUND, NVG_BEVEL.
 void nvgLineJoin(NVGcontext* ctx, int join);
 
+// Set array of dash and gap lengths, terminated by a negative value; the memory is managed by the caller,
+//  i.e., it must remain valid until another value is passed to nvgDashArray or state is popped
+void nvgDashArray(NVGcontext* ctx, float* dashes);
+
+// Set stroke dash offset
+void nvgDashOffset(NVGcontext* ctx, float offset);
+
 // Sets the transparency applied to all rendered shapes.
 // Already transparent paths will get proportionally more transparent as well.
 void nvgGlobalAlpha(NVGcontext* ctx, float alpha);
@@ -304,6 +292,9 @@ void nvgGlobalAlpha(NVGcontext* ctx, float alpha);
 // specific transformation matrix and pre-multiplies the current transformation by it.
 //
 // Current coordinate system (transformation) can be saved and restored using nvgSave() and nvgRestore().
+//
+// In the initial coordinate system (transformation matrix = identity matrix), (0.0, 0.0) corresponds to the
+//  upper-left corner of the upper-left pixel, with positive x to the right and positive y down
 
 // Resets current transform to a identity matrix.
 void nvgResetTransform(NVGcontext* ctx);
@@ -414,7 +405,7 @@ void nvgDeleteImage(NVGcontext* ctx, int image);
 // of the linear gradient, icol specifies the start color and ocol the end color.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgLinearGradient(NVGcontext* ctx, float sx, float sy, float ex, float ey,
-						   NVGcolor icol, NVGcolor ocol);
+               NVGcolor icol, NVGcolor ocol);
 
 // Creates and returns a box gradient. Box gradient is a feathered rounded rectangle, it is useful for rendering
 // drop shadows or highlights for boxes. Parameters (x,y) define the top-left corner of the rectangle,
@@ -422,19 +413,19 @@ NVGpaint nvgLinearGradient(NVGcontext* ctx, float sx, float sy, float ex, float 
 // the border of the rectangle is. Parameter icol specifies the inner color and ocol the outer color of the gradient.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgBoxGradient(NVGcontext* ctx, float x, float y, float w, float h,
-						float r, float f, NVGcolor icol, NVGcolor ocol);
+            float r, float f, NVGcolor icol, NVGcolor ocol);
 
 // Creates and returns a radial gradient. Parameters (cx,cy) specify the center, inr and outr specify
 // the inner and outer radius of the gradient, icol specifies the start color and ocol the end color.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgRadialGradient(NVGcontext* ctx, float cx, float cy, float inr, float outr,
-						   NVGcolor icol, NVGcolor ocol);
+               NVGcolor icol, NVGcolor ocol);
 
 // Creates and returns an image patter. Parameters (ox,oy) specify the left-top location of the image pattern,
 // (ex,ey) the size of one image, angle rotation around the top-left corner, image is handle to the image to render.
 // The gradient is transformed by the current transform when it is passed to nvgFillPaint() or nvgStrokePaint().
 NVGpaint nvgImagePattern(NVGcontext* ctx, float ox, float oy, float ex, float ey,
-						 float angle, int image, float alpha);
+             float angle, int image, float alpha);
 
 //
 // Scissoring
@@ -524,9 +515,6 @@ void nvgFill(NVGcontext* ctx);
 // Fills the current path with current stroke style.
 void nvgStroke(NVGcontext* ctx);
 
-// Set antialiasing amount for painting in pixels. Default is 1.0.
-void nvgSetAntialias(NVGcontext* ctx, float antialias);
-
 
 //
 // Text
@@ -578,8 +566,11 @@ int nvgAddFallbackFontId(NVGcontext* ctx, int baseFont, int fallbackFont);
 // Adds a fallback font by name.
 int nvgAddFallbackFont(NVGcontext* ctx, const char* baseFont, const char* fallbackFont);
 
-// Sets the font size of current text style.
+// Sets the font size (height of the em box of current font in pixels) of current text style.
 void nvgFontSize(NVGcontext* ctx, float size);
+
+// Sets the font height (height of the font bounding box in pixels) - must be reset if font is changed
+void nvgFontHeight(NVGcontext* ctx, float height);
 
 // Sets the blur of current text style.
 void nvgFontBlur(NVGcontext* ctx, float blur);
@@ -593,14 +584,15 @@ void nvgTextLineHeight(NVGcontext* ctx, float lineHeight);
 // Sets the text align of current text style, see NVGalign for options.
 void nvgTextAlign(NVGcontext* ctx, int align);
 
-// Sets the text to align to pixels
-void nvgTextAlignToPixels(NVGcontext* ctx, int enabled);
-
 // Sets the font face based on specified id of current text style.
 void nvgFontFaceId(NVGcontext* ctx, int font);
 
 // Sets the font face based on specified name of current text style.
 void nvgFontFace(NVGcontext* ctx, const char* font);
+
+// Sets the maximum font size (in pixels) that will be drawn using font atlas; text above this size is drawn
+//  as paths; initial value is 0 (i.e., all text is drawn as paths)
+void nvgAtlasTextThreshold(NVGcontext* ctx, float px);
 
 // Draws text string at specified location. If end is specified only the sub-string up to the end is drawn.
 float nvgText(NVGcontext* ctx, float x, float y, const char* string, const char* end);
@@ -638,50 +630,64 @@ int nvgTextBreakLines(NVGcontext* ctx, const char* string, const char* end, floa
 // Internal Render API
 //
 enum NVGtexture {
-	NVG_TEXTURE_ALPHA = 0x01,
-	NVG_TEXTURE_RGBA = 0x02,
+  NVG_TEXTURE_ALPHA = 0x01,
+  NVG_TEXTURE_RGBA = 0x02,
+  NVG_TEXTURE_FLOAT = 0x03,
+};
+
+enum NVGcreateFlags {
+  // always draw rotated text as paths (instead of using font atlas)
+  NVG_ROTATED_TEXT_AS_PATHS = 1 << 1,
+  // default to NVG_AUTOW instead of NVG_CCW
+  NVG_AUTOW_DEFAULT = 1 << 3,
+  // sRGB-aware rendering - perform blending in linear RGB color space
+  NVG_SRGB = 1 << 15,  // this is combined w/ NVGpathFlags in nanovg_sw, so must not conflict!
+};
+
+// flag bitmap for renderer
+enum NVGpathFlags {
+  NVG_PATH_EVENODD = 1 << 0,
+  NVG_PATH_NO_AA = 1 << 1,
+  NVG_PATH_CONVEX = 1 << 2,
 };
 
 struct NVGscissor {
-	float xform[6];
-	float extent[2];
+  float xform[6];
+  float extent[2];
 };
 typedef struct NVGscissor NVGscissor;
 
 struct NVGvertex {
-	float x,y,u,v;
+  float x0,y0,x1,y1,u,v;
 };
 typedef struct NVGvertex NVGvertex;
 
 struct NVGpath {
-	int first;
-	int count;
-	unsigned char closed;
-	int nbevel;
-	NVGvertex* fill;
-	int nfill;
-	NVGvertex* stroke;
-	int nstroke;
-	int winding;
-	int convex;
+  int first;
+  int count;
+  unsigned char closed;
+  unsigned char winding;
+  unsigned char convex;
+  NVGvertex* fill;
+  int nfill;
+  float bounds[4];  // xmin, ymin, xmax, ymax
 };
 typedef struct NVGpath NVGpath;
 
 struct NVGparams {
-	void* userPtr;
-	int edgeAntiAlias;
-	int (*renderCreate)(void* uptr);
-	int (*renderCreateTexture)(void* uptr, int type, int w, int h, int imageFlags, const unsigned char* data);
-	int (*renderDeleteTexture)(void* uptr, int image);
-	int (*renderUpdateTexture)(void* uptr, int image, int x, int y, int w, int h, const unsigned char* data);
-	int (*renderGetTextureSize)(void* uptr, int image, int* w, int* h);
-        void (*renderViewport)(void* uptr, float x, float y, float width, float height, float devicePixelRatio);
-	void (*renderCancel)(void* uptr);
-	void (*renderFlush)(void* uptr);
-	void (*renderFill)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, float fringe, const float* bounds, const NVGpath* paths, int npaths);
-	void (*renderStroke)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, float fringe, float strokeWidth, const NVGpath* paths, int npaths);
-	void (*renderTriangles)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, const NVGvertex* verts, int nverts);
-	void (*renderDelete)(void* uptr);
+  void* userPtr;
+  int flags;
+  int (*renderCreate)(void* uptr);
+  int (*renderCreateTexture)(void* uptr, int type, int w, int h, int imageFlags, const void* data);
+  int (*renderDeleteTexture)(void* uptr, int image);
+  int (*renderUpdateTexture)(void* uptr, int image, int x, int y, int w, int h, const void* data);
+  int (*renderGetTextureSize)(void* uptr, int image, int* w, int* h);
+  void (*renderViewport)(void* uptr, float width, float height, float devicePixelRatio);
+  void (*renderCancel)(void* uptr);
+  void (*renderFlush)(void* uptr);
+  void (*renderFill)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, int flags, const float* bounds, const NVGpath* paths, int npaths);
+  void (*renderTriangles)(void* uptr, NVGpaint* paint, NVGcompositeOperationState compositeOperation, NVGscissor* scissor, const NVGvertex* verts, int nverts);
+  void (*renderDelete)(void* uptr);
 };
 typedef struct NVGparams NVGparams;
 
@@ -698,7 +704,7 @@ void nvgDebugDumpPathCache(NVGcontext* ctx);
 #pragma warning(pop)
 #endif
 
-#define NVG_NOTUSED(v) for (;;) { (void)(1 ? (void)0 : ( (void)(v) ) ); break; }
+#define NVG_NOTUSED(v) do { (void)(1 ? (void)0 : ( (void)(v) ) ); } while(0)
 
 #ifdef __cplusplus
 }

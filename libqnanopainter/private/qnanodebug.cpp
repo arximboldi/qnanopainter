@@ -1,3 +1,4 @@
+// clang-format off
 /**********************************************************
 ** Copyright (c) 2018 QUIt Coding <info@quitcoding.com>
 **
@@ -35,9 +36,10 @@ void QNanoDebug::start()
 
 void QNanoDebug::paintDrawDebug(QNanoPainter *painter, float width, float height)
 {
-    m_drawDebug = nvgDrawDebug(painter->nvgCtx());
 
-    int totalTriCount = m_drawDebug.fillTriCount + m_drawDebug.strokeTriCount + m_drawDebug.textTriCount;
+    // m_drawDebug = nvgDrawDebug(painter->nvgCtx());
+
+    // int totalTriCount = m_drawDebug.fillTriCount + m_drawDebug.strokeTriCount + m_drawDebug.textTriCount;
     qint64 elapsed = m_debugTimer.nsecsElapsed();
     m_debugNsElapsed += elapsed;
     m_debugCounter++;
@@ -75,6 +77,7 @@ void QNanoDebug::paintDrawDebug(QNanoPainter *painter, float width, float height
     float textWidth = width/6;
     QString debugText1 = QString("TIME\n%1").arg(m_debugMsElapsed);
     painter->fillText(debugText1, 0, textY, textWidth);
+#if 0
     QString debugText2 = QString("DCC\n%1").arg(m_drawDebug.drawCallCount);
     painter->fillText(debugText2, textWidth, textY, textWidth);
     QString debugText3 = QString("FILL\n%1").arg(m_drawDebug.fillTriCount);
@@ -85,4 +88,5 @@ void QNanoDebug::paintDrawDebug(QNanoPainter *painter, float width, float height
     painter->fillText(debugText5, 4*textWidth, textY, textWidth);
     QString debugText6 = QString("TOTAL\n%1").arg(totalTriCount);
     painter->fillText(debugText6, 5*textWidth, textY, textWidth);
+#endif
 }

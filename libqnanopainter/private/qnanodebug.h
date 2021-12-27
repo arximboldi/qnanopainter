@@ -31,10 +31,10 @@ class QNanoDebug
 public:
     QNanoDebug();
     void start();
-    void paintDrawDebug(QNanoPainter *painter, float width, float height);
+    void paintDrawDebug(QNanoPainter* painter, float width, float height);
 
 private:
-    NVGdrawDebug m_drawDebug;
+    // NVGdrawDebug m_drawDebug;
     QElapsedTimer m_debugTimer;
     QElapsedTimer m_debugUpdateTimer;
     qint64 m_debugNsElapsed;

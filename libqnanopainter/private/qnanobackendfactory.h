@@ -1,13 +1,14 @@
+// clang-format off
 #ifndef QNANOBACKENDFACTORY_H
 #define QNANOBACKENDFACTORY_H
 
 #ifdef QNANO_BUILD_GL_BACKENDS
 #include "private/qnanobackendgl2.h"
-#include "private/qnanobackendgl3.h"
+//#include "private/qnanobackendgl3.h"
 #endif
 #ifdef QNANO_BUILD_GLES_BACKENDS
 #include "private/qnanobackendgles2.h"
-#include "private/qnanobackendgles3.h"
+//#include "private/qnanobackendgles3.h"
 #endif
 
 class QNanoBackendFactory
@@ -29,7 +30,7 @@ public:
         if (isGLES) {
 #if defined(QNANO_BUILD_GLES_BACKENDS)
             if (major >= 3) {
-                return new QNanoBackendGLES3();
+                return new QNanoBackendGLES2();
             } else {
                 return new QNanoBackendGLES2();
             }
@@ -37,7 +38,7 @@ public:
         } else {
 #if defined(QNANO_BUILD_GL_BACKENDS)
             if (major > 3 || (major == 3 && minor >= 2)) {
-                return new QNanoBackendGL3();
+                return new QNanoBackendGL2();
             } else {
                 return new QNanoBackendGL2();
             }

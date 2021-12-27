@@ -1,3 +1,4 @@
+// clang-format off
 /**********************************************************
 ** Copyright (c) 2015 QUIt Coding <info@quitcoding.com>
 **
@@ -382,10 +383,10 @@ QNanoColor QNanoColor::fromMix(const QNanoColor &color1, const QNanoColor &color
 
 bool QNanoColor::operator ==(const QNanoColor& color) const
 {
-    return qFuzzyCompare(color.m_nvgColor.r, m_nvgColor.r) &&
-           qFuzzyCompare(color.m_nvgColor.g, m_nvgColor.g) &&
-           qFuzzyCompare(color.m_nvgColor.b, m_nvgColor.b) &&
-           qFuzzyCompare(color.m_nvgColor.a, m_nvgColor.a);
+    return color.m_nvgColor.r == m_nvgColor.r &&
+           color.m_nvgColor.g == m_nvgColor.g &&
+           color.m_nvgColor.b == m_nvgColor.b &&
+           color.m_nvgColor.a == m_nvgColor.a;
 }
 
 bool QNanoColor::operator !=(const QNanoColor& color) const
@@ -399,5 +400,5 @@ bool QNanoColor::operator !=(const QNanoColor& color) const
 
 QNanoColor QNanoColor::fromNVGColor(NVGcolor c0)
 {
-    return QNanoColor(static_cast<int>(c0.r*255), static_cast<int>(c0.g*255), static_cast<int>(c0.b*255), static_cast<int>(c0.a*255));
+    return QNanoColor(static_cast<int>(c0.r), static_cast<int>(c0.g), static_cast<int>(c0.b), static_cast<int>(c0.a));
 }

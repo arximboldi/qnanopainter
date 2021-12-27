@@ -24,17 +24,17 @@
 #include "nanovg/nanovg.h"
 #include "private/qnanobackendfactory.h"
 
-#include <QScreen>
 #include <QGuiApplication>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions>
+#include <QScreen>
 
 Q_GLOBAL_STATIC(QNanoPainter, instance)
 
 /*!
     \class QNanoPainter
-    \brief The QNanoPainter class provides an API for painting into QNanoQuickItem.
-    \inmodule QNanoPainter
+    \brief The QNanoPainter class provides an API for painting into
+   QNanoQuickItem. \inmodule QNanoPainter
 
     TODO: Write more documentation here.
 */
@@ -43,7 +43,8 @@ Q_GLOBAL_STATIC(QNanoPainter, instance)
     \enum QNanoPainter::PathWinding
 
     PathWinding is used to specify the direction of path drawing.
-    This direction is used to determine if a subpath is solid or hole in the path.
+    This direction is used to determine if a subpath is solid or hole in the
+   path.
 
     \value WINDING_CCW (default) Clockwise winding for solid shapes.
 
@@ -57,11 +58,13 @@ Q_GLOBAL_STATIC(QNanoPainter, instance)
 
     LineCap is used to define how the end of the line (cap) is drawn.
 
-    \value CAP_BUTT (default) Square line ending that does not cover the end point of the line.
+    \value CAP_BUTT (default) Square line ending that does not cover the end
+   point of the line.
 
     \value CAP_ROUND Round line ending.
 
-    \value CAP_SQUARE Square line ending that covers the end point and extends beyond it by half the line width.
+    \value CAP_SQUARE Square line ending that covers the end point and extends
+   beyond it by half the line width.
 
     \sa setLineCap()
 */
@@ -69,13 +72,15 @@ Q_GLOBAL_STATIC(QNanoPainter, instance)
 /*!
     \enum QNanoPainter::LineJoin
 
-    LineJoin is used to define how the joins between two connected lines are drawn.
+    LineJoin is used to define how the joins between two connected lines are
+   drawn.
 
     \value JOIN_ROUND Circular arc between the two lines is filled.
 
     \value JOIN_BEVEL The triangular notch between the two lines is filled.
 
-    \value JOIN_MITER (default) The outer edges of the lines are extended to meet at an angle, and this area is filled.
+    \value JOIN_MITER (default) The outer edges of the lines are extended to
+   meet at an angle, and this area is filled.
 
     \sa setLineJoin(), setMiterLimit()
 */
@@ -85,11 +90,14 @@ Q_GLOBAL_STATIC(QNanoPainter, instance)
 
     TextAlign is used to define how the text is aligned horizontally.
 
-    \value ALIGN_LEFT (default) Align the left side of the text horizontally to the specified position.
+    \value ALIGN_LEFT (default) Align the left side of the text horizontally to
+   the specified position.
 
-    \value ALIGN_CENTER Align the center of the text horizontally to the specified position.
+    \value ALIGN_CENTER Align the center of the text horizontally to the
+   specified position.
 
-    \value ALIGN_RIGHT Align the right side of the text horizontally to the specified position.
+    \value ALIGN_RIGHT Align the right side of the text horizontally to the
+   specified position.
 
     \sa setTextAlign(), fillText()
 */
@@ -97,15 +105,20 @@ Q_GLOBAL_STATIC(QNanoPainter, instance)
 /*!
     \enum QNanoPainter::TextBaseline
 
-    TextBaseline is used to define how the text is aligned (baselined) vertically.
+    TextBaseline is used to define how the text is aligned (baselined)
+   vertically.
 
-    \value BASELINE_TOP Align the top of the text vertically to the specified position.
+    \value BASELINE_TOP Align the top of the text vertically to the specified
+   position.
 
-    \value BASELINE_MIDDLE Align the middle of the text vertically to the specified position.
+    \value BASELINE_MIDDLE Align the middle of the text vertically to the
+   specified position.
 
-    \value BASELINE_BOTTOM Align the bottom of the text vertically to the specified position.
+    \value BASELINE_BOTTOM Align the bottom of the text vertically to the
+   specified position.
 
-    \value BASELINE_ALPHABETIC (default) Align the baseline of the text vertically to the specified position.
+    \value BASELINE_ALPHABETIC (default) Align the baseline of the text
+   vertically to the specified position.
 
     \sa setTextBaseline(), fillText()
 */
@@ -113,17 +126,19 @@ Q_GLOBAL_STATIC(QNanoPainter, instance)
 /*!
     \enum QNanoPainter::PixelAlign
 
-    PixelAlign is used to define if painting or text should be aligned to pixels.
+    PixelAlign is used to define if painting or text should be aligned to
+   pixels.
 
     \value PIXEL_ALIGN_NONE (default) Do not do any alignment.
 
-    \value PIXEL_ALIGN_HALF Align to half pixels. This will make painting appear sharp when line width is odd.
+    \value PIXEL_ALIGN_HALF Align to half pixels. This will make painting appear
+   sharp when line width is odd.
 
-    \value PIXEL_ALIGN_FULL Align to full pixels. This will make painting appear sharp when line width is even.
+    \value PIXEL_ALIGN_FULL Align to full pixels. This will make painting appear
+   sharp when line width is even.
 
     \sa setPixelAlign(), setPixelAlignText()
 */
-
 
 /*!
     Constructs a painter.
@@ -136,26 +151,31 @@ QNanoPainter::QNanoPainter()
     , m_devicePixelRatio(1.0f)
     , m_fontSet(false)
 {
-
     // Request actual OpenGL context version and type
-    QOpenGLContext *context = QOpenGLContext::currentContext();
-    Q_ASSERT_X(context, "QNanoPainter::QNanoPainter", "No QOpenGL Context available!");
-    m_surfaceFormat =  context->format();
-    int major = m_surfaceFormat.majorVersion();
-    int minor = m_surfaceFormat.minorVersion();
-    bool isGLES = (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGLES);
+    QOpenGLContext* context = QOpenGLContext::currentContext();
+    Q_ASSERT_X(
+        context, "QNanoPainter::QNanoPainter", "No QOpenGL Context available!");
+    m_surfaceFormat = context->format();
+    int major       = m_surfaceFormat.majorVersion();
+    int minor       = m_surfaceFormat.minorVersion();
+    bool isGLES     = (QOpenGLContext::openGLModuleType() ==
+                   QOpenGLContext::LibGLES);
 
     // Create QNanoBackend most suitable for the context
     m_backend.reset(QNanoBackendFactory::createBackend(major, minor, isGLES));
-    m_openglContextName = QString("%1 %2.%3").arg(isGLES ? "OpenGL ES" : "OpenGL").arg(major).arg(minor);
+    m_openglContextName = QString("%1 %2.%3")
+                              .arg(isGLES ? "OpenGL ES" : "OpenGL")
+                              .arg(major)
+                              .arg(minor);
 
     qDebug() << "Using backend:" << m_backend->backendName();
 
     // Initialize NanoVG for correct GL version
     // NOTE: Add also NVG_DEBUG when want to check possible OpenGL errors.
-    m_nvgContext = m_backend->nvgCreate(NVG_ANTIALIAS);
+    m_nvgContext = m_backend->nvgCreate(0 /*NVG_ANTIALIAS*/);
 
-    Q_ASSERT_X(m_nvgContext, "QNanoPainter::QNanoPainter", "Could not init nanovg!");
+    Q_ASSERT_X(
+        m_nvgContext, "QNanoPainter::QNanoPainter", "Could not init nanovg!");
 
     setPixelAlign(QNanoPainter::PIXEL_ALIGN_NONE);
     setPixelAlignText(QNanoPainter::PIXEL_ALIGN_NONE);
@@ -167,7 +187,6 @@ QNanoPainter::QNanoPainter()
 
 QNanoPainter::~QNanoPainter()
 {
-
     if (m_backend && m_nvgContext && QOpenGLContext::currentContext()) {
         // Do NanoVG side cleanups only if OpenGL context still exists
         m_backend->nvgDelete(m_nvgContext);
@@ -197,7 +216,8 @@ void QNanoPainter::beginFrame(float width, float height)
 }
 
 /*!
-    \fn void QNanoPainter::beginFrame(float x, float y, float width, float height)
+    \fn void QNanoPainter::beginFrame(float x, float y, float width, float
+   height)
 
     Initializes QNanoPainter frame painting. All QNanoPainting calls should
     be in between beginFrame() and endFrame(). This is called automatically
@@ -213,7 +233,7 @@ void QNanoPainter::beginFrame(float width, float height)
 
 void QNanoPainter::beginFrameAt(float x, float y, float width, float height)
 {
-    nvgBeginFrameAt(nvgCtx(), x, y, width, height, m_devicePixelRatio);
+    nvgBeginFrame(nvgCtx(), width, height, m_devicePixelRatio);
     QOpenGLFunctions glF(QOpenGLContext::currentContext());
     glF.glViewport(int(x), int(y), int(width), int(height));
 }
@@ -229,10 +249,7 @@ void QNanoPainter::beginFrameAt(float x, float y, float width, float height)
     \sa beginFrame()
 */
 
-void QNanoPainter::endFrame()
-{
-    nvgEndFrame(nvgCtx());
-}
+void QNanoPainter::endFrame() { nvgEndFrame(nvgCtx()); }
 
 /*!
     \fn void QNanoPainter::cancelFrame()
@@ -243,10 +260,7 @@ void QNanoPainter::endFrame()
     \sa beginFrame()
 */
 
-void QNanoPainter::cancelFrame()
-{
-    nvgCancelFrame(nvgCtx());
-}
+void QNanoPainter::cancelFrame() { nvgCancelFrame(nvgCtx()); }
 
 // *** State Handling ***
 
@@ -263,10 +277,7 @@ void QNanoPainter::cancelFrame()
     \sa restore()
 */
 
-void QNanoPainter::save()
-{
-    nvgSave(nvgCtx());
-}
+void QNanoPainter::save() { nvgSave(nvgCtx()); }
 
 /*!
     \fn void QNanoPainter::restore()
@@ -277,10 +288,7 @@ void QNanoPainter::save()
     \sa save()
 */
 
-void QNanoPainter::restore()
-{
-    nvgRestore(nvgCtx());
-}
+void QNanoPainter::restore() { nvgRestore(nvgCtx()); }
 
 /*!
     \fn void QNanoPainter::reset()
@@ -293,18 +301,19 @@ void QNanoPainter::restore()
 
 void QNanoPainter::reset()
 {
-    m_textAlign = QNanoPainter::ALIGN_LEFT;
-    m_textBaseline = QNanoPainter::BASELINE_ALPHABETIC;
-    m_fontSet = false;
-    m_pixelAlign = QNanoPainter::PIXEL_ALIGN_NONE;
+    m_textAlign      = QNanoPainter::ALIGN_LEFT;
+    m_textBaseline   = QNanoPainter::BASELINE_ALPHABETIC;
+    m_fontSet        = false;
+    m_pixelAlign     = QNanoPainter::PIXEL_ALIGN_NONE;
     m_pixelAlignText = QNanoPainter::PIXEL_ALIGN_NONE;
     nvgReset(nvgCtx());
 }
 
 // *** Render styles ***
 
-// Fill and stroke render style can be either a solid color or a brush which is a gradient or a pattern.
-// Solid color is QNanoColor, brush can be QNanoLinearGradient etc. or QNanoImagePattern.
+// Fill and stroke render style can be either a solid color or a brush which is
+// a gradient or a pattern. Solid color is QNanoColor, brush can be
+// QNanoLinearGradient etc. or QNanoImagePattern.
 //
 // Current render style can be saved and restored using save() and restore().
 
@@ -314,7 +323,7 @@ void QNanoPainter::reset()
     Sets the stroke style to a solid \a color.
 */
 
-void QNanoPainter::setStrokeStyle(const QNanoColor &color)
+void QNanoPainter::setStrokeStyle(const QNanoColor& color)
 {
     nvgStrokeColor(nvgCtx(), color.nvgColor());
 }
@@ -323,13 +332,15 @@ void QNanoPainter::setStrokeStyle(const QNanoColor &color)
     \fn void QNanoPainter::setStrokeStyle(const QNanoBrush &brush)
     \overload
 
-    Sets the stroke style to \a brush. Brush can be some gradient or QNanoImagePattern.
+    Sets the stroke style to \a brush. Brush can be some gradient or
+   QNanoImagePattern.
 */
 
-void QNanoPainter::setStrokeStyle(const QNanoBrush &brush)
+void QNanoPainter::setStrokeStyle(const QNanoBrush& brush)
 {
     // If brush is QNanoImagePattern set its painter
-    QNanoImagePattern *ip = dynamic_cast<QNanoImagePattern*>(const_cast<QNanoBrush*>(&brush));
+    QNanoImagePattern* ip = dynamic_cast<QNanoImagePattern*>(
+        const_cast<QNanoBrush*>(&brush));
     if (ip && ip->m_image) {
         ip->m_image->setParentPainter(this);
     }
@@ -346,7 +357,7 @@ void QNanoPainter::setStrokeStyle(const QNanoBrush &brush)
     Sets the fill style to a solid \a color.
 */
 
-void QNanoPainter::setFillStyle(const QNanoColor &color)
+void QNanoPainter::setFillStyle(const QNanoColor& color)
 {
     nvgFillColor(nvgCtx(), color.nvgColor());
 }
@@ -355,13 +366,15 @@ void QNanoPainter::setFillStyle(const QNanoColor &color)
     \fn void QNanoPainter::setFillStyle(const QNanoBrush &brush)
     \overload
 
-    Sets the fill style to \a brush. Brush can be some gradient or QNanoImagePattern.
+    Sets the fill style to \a brush. Brush can be some gradient or
+   QNanoImagePattern.
 */
 
-void QNanoPainter::setFillStyle(const QNanoBrush &brush)
+void QNanoPainter::setFillStyle(const QNanoBrush& brush)
 {
     // If brush is QNanoImagePattern set its painter
-    QNanoImagePattern *ip = dynamic_cast<QNanoImagePattern*>(const_cast<QNanoBrush*>(&brush));
+    QNanoImagePattern* ip = dynamic_cast<QNanoImagePattern*>(
+        const_cast<QNanoBrush*>(&brush));
     if (ip && ip->m_image) {
         ip->m_image->setParentPainter(this);
     }
@@ -376,9 +389,8 @@ void QNanoPainter::setFillStyle(const QNanoBrush &brush)
     \fn void QNanoPainter::setMiterLimit(float limit)
 
     Sets the miter limit to \a limit. Miter limit controls when a sharp corner
-    is beveled. When corner degree between lines in a path is less than this limit,
-    LineJoin will be applied between the lines.
-    The default limit is 10.0.
+    is beveled. When corner degree between lines in a path is less than this
+   limit, LineJoin will be applied between the lines. The default limit is 10.0.
 
     \sa setLineJoin()
 */
@@ -409,10 +421,7 @@ void QNanoPainter::setLineWidth(float width)
     The default line cap is CAP_BUTT.
 */
 
-void QNanoPainter::setLineCap(LineCap cap)
-{
-    nvgLineCap(nvgCtx(), cap);
-}
+void QNanoPainter::setLineCap(LineCap cap) { nvgLineCap(nvgCtx(), cap); }
 
 /*!
     \fn void QNanoPainter::setLineJoin(LineJoin join)
@@ -425,10 +434,7 @@ void QNanoPainter::setLineCap(LineCap cap)
 
 */
 
-void QNanoPainter::setLineJoin(LineJoin join)
-{
-    nvgLineJoin(nvgCtx(), join);
-}
+void QNanoPainter::setLineJoin(LineJoin join) { nvgLineJoin(nvgCtx(), join); }
 
 /*!
     \fn void QNanoPainter::setGlobalAlpha(float alpha)
@@ -446,14 +452,15 @@ void QNanoPainter::setGlobalAlpha(float alpha)
 }
 
 /*!
-    \fn void QNanoPainter::setGlobalCompositeOperation(CompositeOperation operation)
+    \fn void QNanoPainter::setGlobalCompositeOperation(CompositeOperation
+   operation)
 
     Sets the global composite operation mode to \a operation. This mode is
-    applied to all painting operations. Composite modes match to ones available in
-    HTML canvas. The default mode is COMPOSITE_SOURCE_OVER.
+    applied to all painting operations. Composite modes match to ones available
+   in HTML canvas. The default mode is COMPOSITE_SOURCE_OVER.
 
-    Note: Composite (blend) mode can be set with either HTML or OpenGL style method,
-    they override each other.
+    Note: Composite (blend) mode can be set with either HTML or OpenGL style
+   method, they override each other.
 
     \sa setGlobalCompositeBlendFunc(), setGlobalCompositeBlendFuncSeparate()
 */
@@ -464,25 +471,30 @@ void QNanoPainter::setGlobalCompositeOperation(CompositeOperation operation)
 }
 
 /*!
-    \fn void QNanoPainter::setGlobalCompositeBlendFunc(BlendFactor sourceFactor, BlendFactor destinationFactor)
+    \fn void QNanoPainter::setGlobalCompositeBlendFunc(BlendFactor sourceFactor,
+   BlendFactor destinationFactor)
 
-    Sets the global blend modes to \a sourceFactor and \a destinationFactor. This mode is
-    applied to all painting operations. Blend modes match to ones available in
-    OpenGL. The default modes are source BLEND_ONE and destination BLEND_ZERO.
+    Sets the global blend modes to \a sourceFactor and \a destinationFactor.
+   This mode is applied to all painting operations. Blend modes match to ones
+   available in OpenGL. The default modes are source BLEND_ONE and destination
+   BLEND_ZERO.
 
-    Note: Composite (blend) mode can be set with either HTML or OpenGL style method,
-    they override each other.
+    Note: Composite (blend) mode can be set with either HTML or OpenGL style
+   method, they override each other.
 
     \sa setGlobalCompositeBlendFuncSeparate(), setGlobalCompositeOperation()
 */
 
-void QNanoPainter::setGlobalCompositeBlendFunc(BlendFactor sourceFactor, BlendFactor destinationFactor)
+void QNanoPainter::setGlobalCompositeBlendFunc(BlendFactor sourceFactor,
+                                               BlendFactor destinationFactor)
 {
     nvgGlobalCompositeBlendFunc(nvgCtx(), sourceFactor, destinationFactor);
 }
 
 /*!
-    \fn void QNanoPainter::setGlobalCompositeBlendFuncSeparate(BlendFactor sourceRGB, BlendFactor destinationRGB, BlendFactor sourceAlpha, BlendFactor destinationAlpha)
+    \fn void QNanoPainter::setGlobalCompositeBlendFuncSeparate(BlendFactor
+   sourceRGB, BlendFactor destinationRGB, BlendFactor sourceAlpha, BlendFactor
+   destinationAlpha)
 
     Sets the global blend modes separately for RGB and alpha to \a sourceRGB,
     \a destinationRGB, \a sourceAlpha and \a destinationAlpha. This mode is
@@ -490,29 +502,35 @@ void QNanoPainter::setGlobalCompositeBlendFunc(BlendFactor sourceFactor, BlendFa
     OpenGL. The default modes are sourceRGB and sourceAlpha BLEND_ONE,
     destinationRGB and destinationAlpha BLEND_ZERO.
 
-    Note: Composite (blend) mode can be set with either HTML or OpenGL style method,
-    they override each other.
+    Note: Composite (blend) mode can be set with either HTML or OpenGL style
+   method, they override each other.
 
     \sa setGlobalCompositeBlendFunc(), setGlobalCompositeOperation()
 */
 
-void QNanoPainter::setGlobalCompositeBlendFuncSeparate(BlendFactor sourceRGB, BlendFactor destinationRGB, BlendFactor sourceAlpha, BlendFactor destinationAlpha)
+void QNanoPainter::setGlobalCompositeBlendFuncSeparate(
+    BlendFactor sourceRGB,
+    BlendFactor destinationRGB,
+    BlendFactor sourceAlpha,
+    BlendFactor destinationAlpha)
 {
-    nvgGlobalCompositeBlendFuncSeparate(nvgCtx(), sourceRGB, destinationRGB, sourceAlpha, destinationAlpha);
+    nvgGlobalCompositeBlendFuncSeparate(
+        nvgCtx(), sourceRGB, destinationRGB, sourceAlpha, destinationAlpha);
 }
 
 // *** Transforms ***
 
-// The paths, gradients, patterns and scissor region are transformed by an transformation
-// matrix at the time when they are passed to the API.
-// The current transformation matrix is a affine matrix:
+// The paths, gradients, patterns and scissor region are transformed by an
+// transformation matrix at the time when they are passed to the API. The
+// current transformation matrix is a affine matrix:
 //   [sx kx tx]
 //   [ky sy ty]
 //   [ 0  0  1]
 // Where: sx,sy define scaling, kx,ky skewing, and tx,ty translation.
 // The last row is assumed to be 0,0,1 and is not stored.
 //
-// Current coordinate system (transformation) can be saved and restored using save() and restore().
+// Current coordinate system (transformation) can be saved and restored using
+// save() and restore().
 
 /*!
     \fn void QNanoPainter::resetTransform()
@@ -520,10 +538,7 @@ void QNanoPainter::setGlobalCompositeBlendFuncSeparate(BlendFactor sourceRGB, Bl
     Resets current transform to a identity matrix.
 */
 
-void QNanoPainter::resetTransform()
-{
-    nvgResetTransform(nvgCtx());
-}
+void QNanoPainter::resetTransform() { nvgResetTransform(nvgCtx()); }
 
 /*!
     \fn void QNanoPainter::transform(const QTransform &transform)
@@ -531,15 +546,15 @@ void QNanoPainter::resetTransform()
     Premultiplies current coordinate system by specified \a transform.
 */
 
-void QNanoPainter::transform(const QTransform &transform)
+void QNanoPainter::transform(const QTransform& transform)
 {
-    nvgTransform(nvgCtx()
-                 , static_cast<float>(transform.m11())
-                 , static_cast<float>(transform.m12())
-                 , static_cast<float>(transform.m21())
-                 , static_cast<float>(transform.m22())
-                 , static_cast<float>(transform.m31())
-                 , static_cast<float>(transform.m32()));
+    nvgTransform(nvgCtx(),
+                 static_cast<float>(transform.m11()),
+                 static_cast<float>(transform.m12()),
+                 static_cast<float>(transform.m21()),
+                 static_cast<float>(transform.m22()),
+                 static_cast<float>(transform.m31()),
+                 static_cast<float>(transform.m32()));
 }
 
 /*!
@@ -548,10 +563,7 @@ void QNanoPainter::transform(const QTransform &transform)
     Translates current coordinate system by \a x and \a y.
 */
 
-void QNanoPainter::translate(float x, float y)
-{
-    nvgTranslate(nvgCtx(), x, y);
-}
+void QNanoPainter::translate(float x, float y) { nvgTranslate(nvgCtx(), x, y); }
 
 /*!
     \fn void QNanoPainter::translate(const QPointF &point)
@@ -559,44 +571,37 @@ void QNanoPainter::translate(float x, float y)
     Translates current coordinate system by \a point.
 */
 
-void QNanoPainter::translate(const QPointF &point)
+void QNanoPainter::translate(const QPointF& point)
 {
-    translate(static_cast<float>(point.x()),
-              static_cast<float>(point.y()));
+    translate(static_cast<float>(point.x()), static_cast<float>(point.y()));
 }
 
 /*!
     \fn void QNanoPainter::rotate(float angle)
 
-    Rotates current coordinate system by \a angle. Angle is specified in radians.
+    Rotates current coordinate system by \a angle. Angle is specified in
+   radians.
 */
 
-void QNanoPainter::rotate(float angle)
-{
-    nvgRotate(nvgCtx(), angle);
-}
+void QNanoPainter::rotate(float angle) { nvgRotate(nvgCtx(), angle); }
 
 /*!
     \fn void QNanoPainter::skewX(float angle)
 
-    Skews the current coordinate system along X axis by \a angle. Angle is specifid in radians.
+    Skews the current coordinate system along X axis by \a angle. Angle is
+   specifid in radians.
 */
 
-void QNanoPainter::skewX(float angle)
-{
-    nvgSkewX(nvgCtx(), angle);
-}
+void QNanoPainter::skewX(float angle) { nvgSkewX(nvgCtx(), angle); }
 
 /*!
     \fn void QNanoPainter::skewY(float angle)
 
-    Skews the current coordinate system along Y axis by \a angle. Angle is specifid in radians.
+    Skews the current coordinate system along Y axis by \a angle. Angle is
+   specifid in radians.
 */
 
-void QNanoPainter::skewY(float angle)
-{
-    nvgSkewY(nvgCtx(), angle);
-}
+void QNanoPainter::skewY(float angle) { nvgSkewY(nvgCtx(), angle); }
 
 /*!
     \fn void QNanoPainter::scale(float scale)
@@ -605,10 +610,7 @@ void QNanoPainter::skewY(float angle)
     are scaled evenly.
 */
 
-void QNanoPainter::scale(float scale)
-{
-    nvgScale(nvgCtx(), scale, scale);
-}
+void QNanoPainter::scale(float scale) { nvgScale(nvgCtx(), scale, scale); }
 
 /*!
     \fn void QNanoPainter::scale(float scaleX, float scaleY)
@@ -629,25 +631,26 @@ void QNanoPainter::scale(float scaleX, float scaleY)
 
 const QTransform QNanoPainter::currentTransform() const
 {
-    float *xform = new float[6];
+    float* xform = new float[6];
     nvgCurrentTransform(nvgCtx(), xform);
     QTransform t(static_cast<double>(xform[0]),
-            static_cast<double>(xform[1]),
-            static_cast<double>(xform[2]),
-            static_cast<double>(xform[3]),
-            static_cast<double>(xform[4]),
-            static_cast<double>(xform[5]));
-    delete [] xform;
+                 static_cast<double>(xform[1]),
+                 static_cast<double>(xform[2]),
+                 static_cast<double>(xform[3]),
+                 static_cast<double>(xform[4]),
+                 static_cast<double>(xform[5]));
+    delete[] xform;
     return t;
 }
 
 // *** Scissoring ***
 
-// Scissoring allows you to clip the rendering into a rectangle. This is useful for varius
-// user interface cases like rendering a text edit or a timeline.
+// Scissoring allows you to clip the rendering into a rectangle. This is useful
+// for varius user interface cases like rendering a text edit or a timeline.
 
 /*!
-    \fn void QNanoPainter::setClipRect(float x, float y, float width, float height)
+    \fn void QNanoPainter::setClipRect(float x, float y, float width, float
+   height)
 
     Sets the current scissor rectangle to (\a x, \a y, \a width, \a height).
     The scissor rectangle is transformed by the current transform.
@@ -668,7 +671,7 @@ void QNanoPainter::setClipRect(float x, float y, float width, float height)
     \sa resetClipping()
 */
 
-void QNanoPainter::setClipRect(const QRectF &rect)
+void QNanoPainter::setClipRect(const QRectF& rect)
 {
     setClipRect(static_cast<float>(rect.x()),
                 static_cast<float>(rect.y()),
@@ -683,19 +686,17 @@ void QNanoPainter::setClipRect(const QRectF &rect)
     \sa setClipRect()
 */
 
-void QNanoPainter::resetClipping()
-{
-    nvgResetScissor(nvgCtx());
-}
+void QNanoPainter::resetClipping() { nvgResetScissor(nvgCtx()); }
 
 //  *** Paths ***
 
-// All shape drawing in QNanoPainter belong to paths. Drawing a path starts with beginPath()
-// which clears the currently defined path. Then draw paths using shapes such as lines, rects,
-// circles etc. And finally stroke and/or fill the path using current styles.
+// All shape drawing in QNanoPainter belong to paths. Drawing a path starts with
+// beginPath() which clears the currently defined path. Then draw paths using
+// shapes such as lines, rects, circles etc. And finally stroke and/or fill the
+// path using current styles.
 //
-// QNanoPainter uses even-odd fill rule to draw shapes. To draw holes into a shape you can
-// set pathWinding correspondingly.
+// QNanoPainter uses even-odd fill rule to draw shapes. To draw holes into a
+// shape you can set pathWinding correspondingly.
 //
 // Current transtormation affects how paths are drawn.
 
@@ -705,10 +706,7 @@ void QNanoPainter::resetClipping()
     Begins drawing a new path while clearing the current path.
 */
 
-void QNanoPainter::beginPath()
-{
-    nvgBeginPath(nvgCtx());
-}
+void QNanoPainter::beginPath() { nvgBeginPath(nvgCtx()); }
 
 /*!
     \fn void QNanoPainter::closePath()
@@ -717,10 +715,7 @@ void QNanoPainter::beginPath()
     This is equivalent to lineTo([starting point]) as the last path element.
 */
 
-void QNanoPainter::closePath()
-{
-    nvgClosePath(nvgCtx());
-}
+void QNanoPainter::closePath() { nvgClosePath(nvgCtx()); }
 
 /*!
     \fn void QNanoPainter::moveTo(float x, float y)
@@ -741,16 +736,16 @@ void QNanoPainter::moveTo(float x, float y)
     Starts new sub-path with \a point as first point.
 */
 
-void QNanoPainter::moveTo(const QPointF &point)
+void QNanoPainter::moveTo(const QPointF& point)
 {
-    moveTo(static_cast<float>(point.x()),
-           static_cast<float>(point.y()));
+    moveTo(static_cast<float>(point.x()), static_cast<float>(point.y()));
 }
 
 /*!
     \fn void QNanoPainter::lineTo(float x, float y)
 
-    Adds line segment from the last point in the path to the ( \a x, \a y) point.
+    Adds line segment from the last point in the path to the ( \a x, \a y)
+   point.
 */
 
 void QNanoPainter::lineTo(float x, float y)
@@ -766,20 +761,22 @@ void QNanoPainter::lineTo(float x, float y)
     Adds line segment from the last point in the path to the \a point.
 */
 
-void QNanoPainter::lineTo(const QPointF &point)
+void QNanoPainter::lineTo(const QPointF& point)
 {
-    lineTo(static_cast<float>(point.x()),
-           static_cast<float>(point.y()));
+    lineTo(static_cast<float>(point.x()), static_cast<float>(point.y()));
 }
 
 /*!
-    \fn void QNanoPainter::bezierTo(float c1x, float c1y, float c2x, float c2y, float x, float y)
+    \fn void QNanoPainter::bezierTo(float c1x, float c1y, float c2x, float c2y,
+   float x, float y)
 
     Adds cubic bezier segment from last point in the path via two
-    control points (\a c1x, \a c1y and \a c2x, \a c2y) to the specified point (\a x, \a y).
+    control points (\a c1x, \a c1y and \a c2x, \a c2y) to the specified point
+   (\a x, \a y).
 */
 
-void QNanoPainter::bezierTo(float c1x, float c1y, float c2x, float c2y, float x, float y)
+void QNanoPainter::bezierTo(
+    float c1x, float c1y, float c2x, float c2y, float x, float y)
 {
     _checkAlignPixelsAdjust(&x, &y);
     _checkAlignPixelsAdjust(&c1x, &c1y, &c2x, &c2y);
@@ -787,14 +784,17 @@ void QNanoPainter::bezierTo(float c1x, float c1y, float c2x, float c2y, float x,
 }
 
 /*!
-    \fn void QNanoPainter::bezierTo(const QPointF &controlPoint1, const QPointF &controlPoint2, const QPointF &endPoint)
-    \overload
+    \fn void QNanoPainter::bezierTo(const QPointF &controlPoint1, const QPointF
+   &controlPoint2, const QPointF &endPoint) \overload
 
     Adds cubic bezier segment from last point in the path via two
-    control points (\a controlPoint1 and \a controlPoint2) to the specified point \a endPoint.
+    control points (\a controlPoint1 and \a controlPoint2) to the specified
+   point \a endPoint.
 */
 
-void QNanoPainter::bezierTo(const QPointF &controlPoint1, const QPointF &controlPoint2, const QPointF &endPoint)
+void QNanoPainter::bezierTo(const QPointF& controlPoint1,
+                            const QPointF& controlPoint2,
+                            const QPointF& endPoint)
 {
     bezierTo(static_cast<float>(controlPoint1.x()),
              static_cast<float>(controlPoint1.y()),
@@ -818,14 +818,14 @@ void QNanoPainter::quadTo(float cx, float cy, float x, float y)
 }
 
 /*!
-    \fn void QNanoPainter::quadTo(const QPointF &controlPoint, const QPointF &endPoint)
-    \overload
+    \fn void QNanoPainter::quadTo(const QPointF &controlPoint, const QPointF
+   &endPoint) \overload
 
     Adds quadratic bezier segment from last point in the path via
     a \a controlPoint to the specified \a endPoint.
 */
 
-void QNanoPainter::quadTo(const QPointF &controlPoint, const QPointF &endPoint)
+void QNanoPainter::quadTo(const QPointF& controlPoint, const QPointF& endPoint)
 {
     quadTo(static_cast<float>(controlPoint.x()),
            static_cast<float>(controlPoint.y()),
@@ -834,27 +834,32 @@ void QNanoPainter::quadTo(const QPointF &controlPoint, const QPointF &endPoint)
 }
 
 /*!
-    \fn void QNanoPainter::arcTo(float c1x, float c1y, float c2x, float c2y, float radius)
+    \fn void QNanoPainter::arcTo(float c1x, float c1y, float c2x, float c2y,
+   float radius)
 
     Adds an arc segment at the corner defined by the last path point,
     and two specified points (\a c1x, \a c1y and \a c2x, \a c2y) with \a radius.
 */
 
-void QNanoPainter::arcTo(float c1x, float c1y, float c2x, float c2y, float radius)
+void QNanoPainter::arcTo(
+    float c1x, float c1y, float c2x, float c2y, float radius)
 {
     _checkAlignPixelsAdjust(&c1x, &c1y, &c2x, &c2y);
     nvgArcTo(nvgCtx(), c1x, c1y, c2x, c2y, radius);
 }
 
 /*!
-    \fn void QNanoPainter::arcTo(const QPointF &controlPoint1, const QPointF &controlPoint2, float radius)
-    \overload
+    \fn void QNanoPainter::arcTo(const QPointF &controlPoint1, const QPointF
+   &controlPoint2, float radius) \overload
 
     Adds an arc segment at the corner defined by the last path point,
-    and two specified points (\a controlPoint1 and \a controlPoint2) with \a radius.
+    and two specified points (\a controlPoint1 and \a controlPoint2) with \a
+   radius.
 */
 
-void QNanoPainter::arcTo(const QPointF &controlPoint1, const QPointF &controlPoint2, float radius)
+void QNanoPainter::arcTo(const QPointF& controlPoint1,
+                         const QPointF& controlPoint2,
+                         float radius)
 {
     arcTo(static_cast<float>(controlPoint1.x()),
           static_cast<float>(controlPoint1.y()),
@@ -864,23 +869,29 @@ void QNanoPainter::arcTo(const QPointF &controlPoint1, const QPointF &controlPoi
 }
 
 /*!
-    \fn void QNanoPainter::arc(float centerX, float centerY, float radius, float a0, float a1, PathWinding direction)
+    \fn void QNanoPainter::arc(float centerX, float centerY, float radius, float
+   a0, float a1, PathWinding direction)
 
-    Creates new circle arc shaped sub-path. The arc center is at \a centerX, \a centerY,
-    with \a radius, and the arc is drawn from angle \a a0 to \a a1,
-    and swept in \a direction (WINDING_CW or WINDING_CCW).
-    Angles are specified in radians.
+    Creates new circle arc shaped sub-path. The arc center is at \a centerX, \a
+   centerY, with \a radius, and the arc is drawn from angle \a a0 to \a a1, and
+   swept in \a direction (WINDING_CW or WINDING_CCW). Angles are specified in
+   radians.
 */
 
-void QNanoPainter::arc(float centerX, float centerY, float radius, float a0, float a1, PathWinding direction)
+void QNanoPainter::arc(float centerX,
+                       float centerY,
+                       float radius,
+                       float a0,
+                       float a1,
+                       PathWinding direction)
 {
     _checkAlignPixelsAdjust(&centerX, &centerY);
     nvgArc(nvgCtx(), centerX, centerY, radius, a0, a1, direction);
 }
 
 /*!
-    \fn void QNanoPainter::arc(const QPointF &centerPoint, float radius, float a0, float a1, PathWinding direction)
-    \overload
+    \fn void QNanoPainter::arc(const QPointF &centerPoint, float radius, float
+   a0, float a1, PathWinding direction) \overload
 
     Creates new circle arc shaped sub-path. The arc center is at \a centerPoint,
     with \a radius, and the arc is drawn from angle \a a0 to \a a1,
@@ -888,11 +899,18 @@ void QNanoPainter::arc(float centerX, float centerY, float radius, float a0, flo
     Angles are specified in radians.
 */
 
-void QNanoPainter::arc(const QPointF &centerPoint, float radius, float a0, float a1, PathWinding direction)
+void QNanoPainter::arc(const QPointF& centerPoint,
+                       float radius,
+                       float a0,
+                       float a1,
+                       PathWinding direction)
 {
     arc(static_cast<float>(centerPoint.x()),
         static_cast<float>(centerPoint.y()),
-        radius, a0, a1, direction);
+        radius,
+        a0,
+        a1,
+        direction);
 }
 
 /*!
@@ -917,7 +935,7 @@ void QNanoPainter::rect(float x, float y, float width, float height)
     This is an overloaded method using QRectF.
 */
 
-void QNanoPainter::rect(const QRectF &rect)
+void QNanoPainter::rect(const QRectF& rect)
 {
     this->rect(static_cast<float>(rect.x()),
                static_cast<float>(rect.y()),
@@ -926,13 +944,15 @@ void QNanoPainter::rect(const QRectF &rect)
 }
 
 /*!
-    \fn void QNanoPainter::roundedRect(float x, float y, float width, float height, float radius)
+    \fn void QNanoPainter::roundedRect(float x, float y, float width, float
+   height, float radius)
 
     Creates new rounded rectangle shaped sub-path in position \a x, \a y with
     size \a width, \a height. Corners rounding will be \a radius.
 */
 
-void QNanoPainter::roundedRect(float x, float y, float width, float height, float radius)
+void QNanoPainter::roundedRect(
+    float x, float y, float width, float height, float radius)
 {
     _checkAlignPixelsAdjust(&x, &y);
     _checkAlignPixels(&width, &height);
@@ -943,11 +963,11 @@ void QNanoPainter::roundedRect(float x, float y, float width, float height, floa
     \fn void QNanoPainter::roundedRect(const QRectF &rect, float radius)
     \overload
 
-    Creates new rounded rectangle shaped sub-path at \a rect with \a radius corners.
-    This is an overloaded method using QRectF.
+    Creates new rounded rectangle shaped sub-path at \a rect with \a radius
+   corners. This is an overloaded method using QRectF.
 */
 
-void QNanoPainter::roundedRect(const QRectF &rect, float radius)
+void QNanoPainter::roundedRect(const QRectF& rect, float radius)
 {
     roundedRect(static_cast<float>(rect.x()),
                 static_cast<float>(rect.y()),
@@ -957,45 +977,76 @@ void QNanoPainter::roundedRect(const QRectF &rect, float radius)
 }
 
 /*!
-    \fn void QNanoPainter::roundedRect(float x, float y, float width, float height, float radiusTopLeft, float radiusTopRight, float radiusBottomRight, float radiusBottomLeft)
+    \fn void QNanoPainter::roundedRect(float x, float y, float width, float
+   height, float radiusTopLeft, float radiusTopRight, float radiusBottomRight,
+   float radiusBottomLeft)
 
     Creates new rounded rectangle shaped sub-path in position \a x, \a y with
     size \a width, \a height. Corners rounding can be varying per-corner, with
-    \a radiusTopLeft, \a radiusTopRight, \a radiusBottomRight, \a radiusBottomLeft.
+    \a radiusTopLeft, \a radiusTopRight, \a radiusBottomRight, \a
+   radiusBottomLeft.
 */
 
-void QNanoPainter::roundedRect(float x, float y, float width, float height, float radiusTopLeft, float radiusTopRight, float radiusBottomRight, float radiusBottomLeft)
+void QNanoPainter::roundedRect(float x,
+                               float y,
+                               float width,
+                               float height,
+                               float radiusTopLeft,
+                               float radiusTopRight,
+                               float radiusBottomRight,
+                               float radiusBottomLeft)
 {
     _checkAlignPixelsAdjust(&x, &y);
     _checkAlignPixels(&width, &height);
-    nvgRoundedRectVarying(nvgCtx(), x, y, width, height, radiusTopLeft, radiusTopRight, radiusBottomRight, radiusBottomLeft);
+    nvgRoundedRectVarying(nvgCtx(),
+                          x,
+                          y,
+                          width,
+                          height,
+                          radiusTopLeft,
+                          radiusTopRight,
+                          radiusBottomRight,
+                          radiusBottomLeft);
 }
 
 /*!
-    \fn void QNanoPainter::roundedRect(const QRectF &rect, float radiusTopLeft, float radiusTopRight, float radiusBottomRight, float radiusBottomLeft)
+    \fn void QNanoPainter::roundedRect(const QRectF &rect, float radiusTopLeft,
+   float radiusTopRight, float radiusBottomRight, float radiusBottomLeft)
     \overload
 
-    Creates new rounded rectangle shaped sub-path at \a rect. Corners rounding can be
-    varying per-corner, with \a radiusTopLeft, \a radiusTopRight, \a radiusBottomRight,
-    \a radiusBottomLeft.
+    Creates new rounded rectangle shaped sub-path at \a rect. Corners rounding
+   can be varying per-corner, with \a radiusTopLeft, \a radiusTopRight, \a
+   radiusBottomRight, \a radiusBottomLeft.
 */
 
-void QNanoPainter::roundedRect(const QRectF &rect, float radiusTopLeft, float radiusTopRight, float radiusBottomRight, float radiusBottomLeft)
+void QNanoPainter::roundedRect(const QRectF& rect,
+                               float radiusTopLeft,
+                               float radiusTopRight,
+                               float radiusBottomRight,
+                               float radiusBottomLeft)
 {
     roundedRect(static_cast<float>(rect.x()),
                 static_cast<float>(rect.y()),
                 static_cast<float>(rect.width()),
                 static_cast<float>(rect.height()),
-                radiusTopLeft, radiusTopRight, radiusBottomRight, radiusBottomLeft);
+                radiusTopLeft,
+                radiusTopRight,
+                radiusBottomRight,
+                radiusBottomLeft);
 }
 
 /*!
-    \fn void QNanoPainter::ellipse(float centerX, float centerY, float radiusX, float radiusY)
+    \fn void QNanoPainter::ellipse(float centerX, float centerY, float radiusX,
+   float radiusY)
 
-    Creates new ellipse shaped sub-path into ( \a centerX, \a centerY) with \a radiusX and \a radiusY.
+    Creates new ellipse shaped sub-path into ( \a centerX, \a centerY) with \a
+   radiusX and \a radiusY.
 */
 
-void QNanoPainter::ellipse(float centerX, float centerY, float radiusX, float radiusY)
+void QNanoPainter::ellipse(float centerX,
+                           float centerY,
+                           float radiusX,
+                           float radiusY)
 {
     _checkAlignPixelsAdjust(&centerX, &centerX);
     _checkAlignPixels(&radiusX, &radiusY);
@@ -1009,18 +1060,19 @@ void QNanoPainter::ellipse(float centerX, float centerY, float radiusX, float ra
     Creates new ellipse shaped sub-path into \a rect.
 */
 
-void QNanoPainter::ellipse(const QRectF &rect)
+void QNanoPainter::ellipse(const QRectF& rect)
 {
-    ellipse(static_cast<float>(rect.x()+rect.width()/2),
-            static_cast<float>(rect.y()+rect.height()/2),
-            static_cast<float>(rect.width()/2),
-            static_cast<float>(rect.height()/2));
+    ellipse(static_cast<float>(rect.x() + rect.width() / 2),
+            static_cast<float>(rect.y() + rect.height() / 2),
+            static_cast<float>(rect.width() / 2),
+            static_cast<float>(rect.height() / 2));
 }
 
 /*!
     \fn void QNanoPainter::circle(float centerX, float centerY, float radius)
 
-    Creates new circle shaped sub-path into ( \a centerX, \a centerY) with \a radius.
+    Creates new circle shaped sub-path into ( \a centerX, \a centerY) with \a
+   radius.
 */
 
 void QNanoPainter::circle(float centerX, float centerY, float radius)
@@ -1035,17 +1087,18 @@ void QNanoPainter::circle(float centerX, float centerY, float radius)
     Creates new circle shaped sub-path into \a centerPoint with \a radius.
 */
 
-void QNanoPainter::circle(const QPointF &centerPoint, float radius)
+void QNanoPainter::circle(const QPointF& centerPoint, float radius)
 {
     circle(static_cast<float>(centerPoint.x()),
-           static_cast<float>(centerPoint.y()), radius);
+           static_cast<float>(centerPoint.y()),
+           radius);
 }
 
 /*!
     \fn void QNanoPainter::setPathWinding(PathWinding winding)
 
-    Sets the current sub-path \a winding to either WINDING_CCW (default) or WINDING_CW.
-    WINDING_CCW draws solid subpaths while WINDING_CW draws holes.
+    Sets the current sub-path \a winding to either WINDING_CCW (default) or
+   WINDING_CW. WINDING_CCW draws solid subpaths while WINDING_CW draws holes.
 */
 
 void QNanoPainter::setPathWinding(PathWinding winding)
@@ -1056,7 +1109,8 @@ void QNanoPainter::setPathWinding(PathWinding winding)
 /*!
     \fn void QNanoPainter::beginSolidSubPath()
 
-    Start a solid subpath. This is equivalent to setPathWinding(QNanoPainter::WINDING_CCW))
+    Start a solid subpath. This is equivalent to
+   setPathWinding(QNanoPainter::WINDING_CCW))
 */
 
 void QNanoPainter::beginSolidSubPath()
@@ -1067,7 +1121,8 @@ void QNanoPainter::beginSolidSubPath()
 /*!
     \fn void QNanoPainter::beginHoleSubPath()
 
-    Start a hole subpath. This is equivalent to setPathWinding(QNanoPainter::WINDING_CW)
+    Start a hole subpath. This is equivalent to
+   setPathWinding(QNanoPainter::WINDING_CW)
 */
 
 void QNanoPainter::beginHoleSubPath()
@@ -1082,10 +1137,7 @@ void QNanoPainter::beginHoleSubPath()
     \sa setFillStyle()
 */
 
-void QNanoPainter::fill()
-{
-    nvgFill(nvgCtx());
-}
+void QNanoPainter::fill() { nvgFill(nvgCtx()); }
 
 /*!
     \fn void QNanoPainter::stroke()
@@ -1094,21 +1146,20 @@ void QNanoPainter::fill()
     \sa setStrokeStyle()
 */
 
-void QNanoPainter::stroke()
-{
-    nvgStroke(nvgCtx());
-}
+void QNanoPainter::stroke() { nvgStroke(nvgCtx()); }
 
 // *** Direct drawing ***
 
 // In addition to paths, these methods allow drawing rects directly.
 // NOTE: For performance it's better to use paths and draw multiple elements
-// with one beginPath -> fill/stroke. So only use these for a single rectangle needs.
+// with one beginPath -> fill/stroke. So only use these for a single rectangle
+// needs.
 
 /*!
     \fn void QNanoPainter::fillRect(float x, float y, float width, float height)
 
-    Draws a filled rectangle into specified position ( \a x, \a y) at size \a width, \a height.
+    Draws a filled rectangle into specified position ( \a x, \a y) at size \a
+   width, \a height.
 */
 
 void QNanoPainter::fillRect(float x, float y, float width, float height)
@@ -1128,7 +1179,7 @@ void QNanoPainter::fillRect(float x, float y, float width, float height)
     This is an overloaded method using QRectF.
 */
 
-void QNanoPainter::fillRect(const QRectF &rect)
+void QNanoPainter::fillRect(const QRectF& rect)
 {
     fillRect(static_cast<float>(rect.x()),
              static_cast<float>(rect.y()),
@@ -1137,9 +1188,11 @@ void QNanoPainter::fillRect(const QRectF &rect)
 }
 
 /*!
-    \fn void QNanoPainter::strokeRect(float x, float y, float width, float height)
+    \fn void QNanoPainter::strokeRect(float x, float y, float width, float
+   height)
 
-    Draws a stoked rectangle into specified position ( \a x, \a y) at size \a width, \a height.
+    Draws a stoked rectangle into specified position ( \a x, \a y) at size \a
+   width, \a height.
 */
 
 void QNanoPainter::strokeRect(float x, float y, float width, float height)
@@ -1159,7 +1212,7 @@ void QNanoPainter::strokeRect(float x, float y, float width, float height)
     This is an overloaded method using QRectF.
 */
 
-void QNanoPainter::strokeRect(const QRectF &rect)
+void QNanoPainter::strokeRect(const QRectF& rect)
 {
     strokeRect(static_cast<float>(rect.x()),
                static_cast<float>(rect.y()),
@@ -1176,7 +1229,7 @@ void QNanoPainter::strokeRect(const QRectF &rect)
     Draw \a image into \a x, \a y, at its default size.
 */
 
-void QNanoPainter::drawImage(QNanoImage &image, float x, float y)
+void QNanoPainter::drawImage(QNanoImage& image, float x, float y)
 {
     _checkAlignPixelsAdjust(&x, &y);
     image.setParentPainter(this);
@@ -1186,13 +1239,14 @@ void QNanoPainter::drawImage(QNanoImage &image, float x, float y)
 }
 
 /*!
-    \fn void QNanoPainter::drawImage(QNanoImage &image, float x, float y, float width, float height)
-    \overload
+    \fn void QNanoPainter::drawImage(QNanoImage &image, float x, float y, float
+   width, float height) \overload
 
     Draw \a image into \a x, \a y, at given \a width and \a height.
 */
 
-void QNanoPainter::drawImage(QNanoImage &image, float x, float y, float width, float height)
+void QNanoPainter::drawImage(
+    QNanoImage& image, float x, float y, float width, float height)
 {
     _checkAlignPixelsAdjust(&x, &y);
     _checkAlignPixels(&width, &height);
@@ -1201,13 +1255,13 @@ void QNanoPainter::drawImage(QNanoImage &image, float x, float y, float width, f
 }
 
 /*!
-    \fn void QNanoPainter::drawImage(QNanoImage &image, const QRectF destinationRect)
-    \overload
+    \fn void QNanoPainter::drawImage(QNanoImage &image, const QRectF
+   destinationRect) \overload
 
     Draw \a image into position and size of \a destinationRect.
 */
 
-void QNanoPainter::drawImage(QNanoImage &image, const QRectF destinationRect)
+void QNanoPainter::drawImage(QNanoImage& image, const QRectF destinationRect)
 {
     drawImage(image,
               static_cast<float>(destinationRect.x()),
@@ -1217,13 +1271,16 @@ void QNanoPainter::drawImage(QNanoImage &image, const QRectF destinationRect)
 }
 
 /*!
-    \fn void QNanoPainter::drawImage(QNanoImage &image, const QRectF sourceRect, const QRectF destinationRect)
-    \overload
+    \fn void QNanoPainter::drawImage(QNanoImage &image, const QRectF sourceRect,
+   const QRectF destinationRect) \overload
 
-    Draw \a image into position and size of \a destinationRect, from \a sourceRect area of image.
+    Draw \a image into position and size of \a destinationRect, from \a
+   sourceRect area of image.
 */
 
-void QNanoPainter::drawImage(QNanoImage &image, const QRectF sourceRect, const QRectF destinationRect)
+void QNanoPainter::drawImage(QNanoImage& image,
+                             const QRectF sourceRect,
+                             const QRectF destinationRect)
 {
     image.setParentPainter(this);
     float sx = static_cast<float>(sourceRect.x());
@@ -1236,11 +1293,18 @@ void QNanoPainter::drawImage(QNanoImage &image, const QRectF sourceRect, const Q
     float dh = static_cast<float>(destinationRect.height());
     _checkAlignPixelsAdjust(&dx, &dy);
     _checkAlignPixels(&dw, &dh);
-    float startX = dx - sx * (dw/sw);
-    float startY = dy - sy * (dh/sh);
-    float endX = dw * image.width() / sw;
-    float endY = dh * image.height() / sh;
-    NVGpaint ip = nvgImagePattern(nvgCtx(), startX, startY, endX, endY, 0.0f, image.getID(nvgCtx()), 1.0f);
+    float startX = dx - sx * (dw / sw);
+    float startY = dy - sy * (dh / sh);
+    float endX   = dw * image.width() / sw;
+    float endY   = dh * image.height() / sh;
+    NVGpaint ip  = nvgImagePattern(nvgCtx(),
+                                  startX,
+                                  startY,
+                                  endX,
+                                  endY,
+                                  0.0f,
+                                  image.getID(nvgCtx()),
+                                  1.0f);
     nvgSave(nvgCtx());
     nvgBeginPath(nvgCtx());
     nvgRect(nvgCtx(), dx, dy, dw, dh);
@@ -1262,8 +1326,8 @@ void QNanoPainter::drawImage(QNanoImage &image, const QRectF sourceRect, const Q
 // The local space means that values are not rotated or scale as per the current
 // transformation. For example if you set font size to 12, which would mean that
 // line height is 16, then regardless of the current scaling and rotation, the
-// returned line height is always 16. Some measures may vary because of the scaling
-// since aforementioned pixel snapping.
+// returned line height is always 16. Some measures may vary because of the
+// scaling since aforementioned pixel snapping.
 //
 // Note: currently only solid color fill is supported for text.
 
@@ -1273,7 +1337,7 @@ void QNanoPainter::drawImage(QNanoImage &image, const QRectF sourceRect, const Q
     Sets the \a font as currently active font.
 */
 
-void QNanoPainter::setFont(QNanoFont &font)
+void QNanoPainter::setFont(QNanoFont& font)
 {
     font.setParentPainter(this);
     nvgFontFaceId(nvgCtx(), font.getID(nvgCtx()));
@@ -1307,40 +1371,49 @@ void QNanoPainter::setTextBaseline(TextBaseline baseline)
 }
 
 /*!
-    \fn void QNanoPainter::fillText(const QString &text, float x, float y, float maxWidth)
+    \fn void QNanoPainter::fillText(const QString &text, float x, float y, float
+   maxWidth)
 
-    Draws \a text string at specified location ( \a x, \a y), with current textAlign and textBaseline.
-    To make the text wrap into multiple lines, set optional \a maxWidth parameter to preferred
-    row width in pixels. White space is stripped at the beginning of the rows,
-    the text is split at word boundaries or when new-line characters are encountered.
-    Words longer than the max width are split at nearest character (i.e. no hyphenation).
+    Draws \a text string at specified location ( \a x, \a y), with current
+   textAlign and textBaseline. To make the text wrap into multiple lines, set
+   optional \a maxWidth parameter to preferred row width in pixels. White space
+   is stripped at the beginning of the rows, the text is split at word
+   boundaries or when new-line characters are encountered. Words longer than the
+   max width are split at nearest character (i.e. no hyphenation).
 */
 
-void QNanoPainter::fillText(const QString &text, float x, float y, float maxWidth)
+void QNanoPainter::fillText(const QString& text,
+                            float x,
+                            float y,
+                            float maxWidth)
 {
     _checkAlignPixelsText(&x, &y);
     _checkFont();
     if (maxWidth < 0) {
         nvgText(nvgCtx(), x, y, text.toUtf8().constData(), nullptr);
     } else {
-        nvgTextBox(nvgCtx(), x, y, maxWidth, text.toUtf8().constData(), nullptr);
+        nvgTextBox(
+            nvgCtx(), x, y, maxWidth, text.toUtf8().constData(), nullptr);
     }
 }
 
 /*!
-    \fn void QNanoPainter::fillText(const QString &text, const QPointF &point, float maxWidth)
-    \overload
+    \fn void QNanoPainter::fillText(const QString &text, const QPointF &point,
+   float maxWidth) \overload
 
-    Draws \a text string at specified \a point, with current textAlign and textBaseline.
-    To make the text wrap into multiple lines, set optional \a maxWidth parameter to preferred
-    row width in pixels. White space is stripped at the beginning of the rows,
-    the text is split at word boundaries or when new-line characters are encountered.
-    Words longer than the max width are split at nearest character (i.e. no hyphenation).
+    Draws \a text string at specified \a point, with current textAlign and
+   textBaseline. To make the text wrap into multiple lines, set optional \a
+   maxWidth parameter to preferred row width in pixels. White space is stripped
+   at the beginning of the rows, the text is split at word boundaries or when
+   new-line characters are encountered. Words longer than the max width are
+   split at nearest character (i.e. no hyphenation).
 
     This is an overloaded method using QPointF.
 */
 
-void QNanoPainter::fillText(const QString &text, const QPointF &point, float maxWidth)
+void QNanoPainter::fillText(const QString& text,
+                            const QPointF& point,
+                            float maxWidth)
 {
     fillText(text,
              static_cast<float>(point.x()),
@@ -1352,63 +1425,78 @@ void QNanoPainter::fillText(const QString &text, const QPointF &point, float max
     \fn void QNanoPainter::fillText(const QString &text, const QRectF &rect)
     \overload
 
-    Draws \a text string inside \a rect, with current textAlign and textBaseline.
-    Width of the rect parameter is used as maxWidth.
+    Draws \a text string inside \a rect, with current textAlign and
+   textBaseline. Width of the rect parameter is used as maxWidth.
 
     This is an overloaded method using QRectF.
 */
 
-void QNanoPainter::fillText(const QString &text, const QRectF &rect)
+void QNanoPainter::fillText(const QString& text, const QRectF& rect)
 {
     float x = static_cast<float>(rect.x());
     float y = static_cast<float>(rect.y());
     _checkAlignPixelsText(&x, &y);
     _checkFont();
-    nvgTextBox(nvgCtx(), x, y,
+    nvgTextBox(nvgCtx(),
+               x,
+               y,
                static_cast<float>(rect.width()),
-               text.toUtf8().constData(), nullptr);
+               text.toUtf8().constData(),
+               nullptr);
 }
 
 /*!
-    \fn QRectF QNanoPainter::textBoundingBox(const QString &text, float x, float y, float maxWidth)
+    \fn QRectF QNanoPainter::textBoundingBox(const QString &text, float x, float
+   y, float maxWidth)
 
     Measures bounding box of a \a text string at (\a x, \a y).
-    To measure multi-line text, set optional \a maxWidth parameter to preferred row width in pixels.
-    Returns QRectF with values [xmin, ymin, width, height].
+    To measure multi-line text, set optional \a maxWidth parameter to preferred
+   row width in pixels. Returns QRectF with values [xmin, ymin, width, height].
     Measured values are returned in local coordinate space.
 */
 
-const QRectF QNanoPainter::textBoundingBox(const QString &text, float x, float y, float maxWidth)
+const QRectF QNanoPainter::textBoundingBox(const QString& text,
+                                           float x,
+                                           float y,
+                                           float maxWidth)
 {
     _checkAlignPixelsText(&x, &y);
     _checkFont();
     float bounds[4];
     if (maxWidth < 0) {
-        nvgTextBounds(nvgCtx(), x, y, text.toUtf8().constData(), nullptr, bounds);
+        nvgTextBounds(
+            nvgCtx(), x, y, text.toUtf8().constData(), nullptr, bounds);
     } else {
-        nvgTextBoxBounds(nvgCtx(), x, y, maxWidth, text.toUtf8().constData(), nullptr, bounds);
+        nvgTextBoxBounds(nvgCtx(),
+                         x,
+                         y,
+                         maxWidth,
+                         text.toUtf8().constData(),
+                         nullptr,
+                         bounds);
     }
     return QRectF(static_cast<double>(bounds[0]),
-            static_cast<double>(bounds[1]),
-            static_cast<double>(bounds[2]-bounds[0]),
-            static_cast<double>(bounds[3]-bounds[1]));
+                  static_cast<double>(bounds[1]),
+                  static_cast<double>(bounds[2] - bounds[0]),
+                  static_cast<double>(bounds[3] - bounds[1]));
 }
 
 /*!
     \fn void QNanoPainter::setAntialias(float antialias)
 
     Set the current antialiasing amount to \a antialias in pixels.
-    More antialias means smoother painting. This only affects fill and stroke painting,
-    not images or texts. To smoothen text, see QNanoFont setBlur().
-    The default value is 1.0.
+    More antialias means smoother painting. This only affects fill and stroke
+   painting, not images or texts. To smoothen text, see QNanoFont setBlur(). The
+   default value is 1.0.
 
-    Antialiasing can be modified per-path so it can be set before each stroke/fill.
-    To disable antialiasing from the whole QNanoQuickItem, use antialiasing property.
+    Antialiasing can be modified per-path so it can be set before each
+   stroke/fill. To disable antialiasing from the whole QNanoQuickItem, use
+   antialiasing property.
 */
 
 void QNanoPainter::setAntialias(float antialias)
 {
-    nvgSetAntialias(nvgCtx(), antialias);
+    nvgShapeAntiAlias(nvgCtx(), antialias > 0 ? 1 : 0);
 }
 
 /*!
@@ -1423,17 +1511,14 @@ void QNanoPainter::setAntialias(float antialias)
     The default value is PIXEL_ALIGN_NONE.
 */
 
-void QNanoPainter::setPixelAlign(PixelAlign align)
-{
-    m_pixelAlign = align;
-}
+void QNanoPainter::setPixelAlign(PixelAlign align) { m_pixelAlign = align; }
 
 /*!
     \fn void QNanoPainter::setPixelAlignText(PixelAlign align)
 
     Set the pixelAlign of text to \a align. Pixel alignment means that
-    painting of texts is aligned to half or full pixels. This is especially useful
-    when drawing smaller font sizes and preference is to have them sharp
+    painting of texts is aligned to half or full pixels. This is especially
+   useful when drawing smaller font sizes and preference is to have them sharp
     instead of slightly blurry. Animations when pixelAlign is
     enabled are obviously less smooth as everyting move in full pixels.
     The default value is PIXEL_ALIGN_NONE.
@@ -1441,6 +1526,7 @@ void QNanoPainter::setPixelAlign(PixelAlign align)
 
 void QNanoPainter::setPixelAlignText(PixelAlign align)
 {
+#if 0
     m_pixelAlignText = align;
     // TODO: Support half pixel alignment?
     if (m_pixelAlignText == PIXEL_ALIGN_NONE) {
@@ -1448,6 +1534,7 @@ void QNanoPainter::setPixelAlignText(PixelAlign align)
     } else {
         nvgTextAlignToPixels(nvgCtx(), true);
     }
+#endif
 }
 
 /*!
@@ -1459,10 +1546,7 @@ void QNanoPainter::setPixelAlignText(PixelAlign align)
     The default value is 1.0.
 */
 
-float QNanoPainter::devicePixelRatio() const
-{
-    return m_devicePixelRatio;
-}
+float QNanoPainter::devicePixelRatio() const { return m_devicePixelRatio; }
 
 // ***** Static methods *****
 
@@ -1478,8 +1562,8 @@ float QNanoPainter::devicePixelRatio() const
 
 float QNanoPainter::mmToPx(float mm)
 {
-    float ldp = 72.0f;
-    QScreen *screen = QGuiApplication::primaryScreen();
+    float ldp       = 72.0f;
+    QScreen* screen = QGuiApplication::primaryScreen();
     if (screen) {
         ldp = static_cast<float>(screen->physicalDotsPerInch());
     } else {
@@ -1496,20 +1580,22 @@ float QNanoPainter::mmToPx(float mm)
 
 float QNanoPainter::ptToPx(float pt)
 {
-    float ldp = 72.0f;
-    QScreen *screen = QGuiApplication::primaryScreen();
+    float ldp       = 72.0f;
+    QScreen* screen = QGuiApplication::primaryScreen();
     if (screen) {
         ldp = static_cast<float>(screen->physicalDotsPerInch());
     } else {
         qWarning() << "QScreen required for ptToPx";
     }
-    return pt * (ldp/72.0f);
+    return pt * (ldp / 72.0f);
 }
 
 /*
-int QNanoPainter::textGlyphPositions(float x, float y, const char* string, const char* end, NVGglyphPosition* positions, int maxPositions)
+int QNanoPainter::textGlyphPositions(float x, float y, const char* string, const
+char* end, NVGglyphPosition* positions, int maxPositions)
 {
-    return nvgTextGlyphPositions(nvgCtx(), x, y, string, end, positions, maxPositions);
+    return nvgTextGlyphPositions(nvgCtx(), x, y, string, end, positions,
+maxPositions);
 }
 
 void QNanoPainter::textMetrics(float* ascender, float* descender, float* lineh)
@@ -1517,9 +1603,11 @@ void QNanoPainter::textMetrics(float* ascender, float* descender, float* lineh)
     nvgTextMetrics(nvgCtx(), ascender, descender, lineh);
 }
 
-int QNanoPainter::textBreakLines(const char* string, const char* end, float breakRowWidth, NVGtextRow* rows, int maxRows)
+int QNanoPainter::textBreakLines(const char* string, const char* end, float
+breakRowWidth, NVGtextRow* rows, int maxRows)
 {
-    return nvgTextBreakLines(nvgCtx(), string, end, breakRowWidth, rows, maxRows);
+    return nvgTextBreakLines(nvgCtx(), string, end, breakRowWidth, rows,
+maxRows);
 }
 */
 
@@ -1529,29 +1617,29 @@ int QNanoPainter::textBreakLines(const char* string, const char* end, float brea
    \internal
 */
 
-QNanoPainter* QNanoPainter::getInstance()
-{
-    return instance();
-}
+QNanoPainter* QNanoPainter::getInstance() { return instance(); }
 
 void QNanoPainter::enableAntialiasing(bool enable)
 {
-    NVGparams *params = m_backend->internalParams(nvgCtx());
+#if 0
+    NVGparams* params = m_backend->internalParams(nvgCtx());
     if (params && params->edgeAntiAlias != (enable ? 1 : 0)) {
         params->edgeAntiAlias = enable;
         m_backend->setFlag(nvgCtx(), NVG_ANTIALIAS, enable);
     }
+#endif
 }
 
 void QNanoPainter::enableHighQualityRendering(bool enable)
 {
-    m_backend->setFlag(nvgCtx(), NVG_STENCIL_STROKES, enable);
+    //    m_backend->setFlag(nvgCtx(), NVG_STENCIL_STROKES, enable);
 }
 
-
-void QNanoPainter::drawImageId(int imageId, float x, float y, float width, float height)
+void QNanoPainter::drawImageId(
+    int imageId, float x, float y, float width, float height)
 {
-    NVGpaint ip = nvgImagePattern(nvgCtx(), x, y, width, height, 0.0f, imageId, 1.0f);
+    NVGpaint ip = nvgImagePattern(
+        nvgCtx(), x, y, width, height, 0.0f, imageId, 1.0f);
     nvgSave(nvgCtx());
     nvgBeginPath(nvgCtx());
     nvgRect(nvgCtx(), x, y, width, height);
@@ -1560,19 +1648,25 @@ void QNanoPainter::drawImageId(int imageId, float x, float y, float width, float
     nvgRestore(nvgCtx());
 }
 
-void QNanoPainter::_checkFont() {
+void QNanoPainter::_checkFont()
+{
     // If user hasn't set a font, load the default one
     if (!m_fontSet) {
         if (m_defaultFont.isNull()) {
             qDebug() << "No font set, using the default font";
-            m_defaultFont = QSharedPointer<QNanoFont>::create(QNanoFont::DEFAULT_FONT_NORMAL);
+            m_defaultFont = QSharedPointer<QNanoFont>::create(
+                QNanoFont::DEFAULT_FONT_NORMAL);
         }
         setFont(*m_defaultFont);
     }
 }
 
 // Align to full or half pixel
-void QNanoPainter::_checkAlignPixelsAdjust(float *a, float *b, float *c, float *d) {
+void QNanoPainter::_checkAlignPixelsAdjust(float* a,
+                                           float* b,
+                                           float* c,
+                                           float* d)
+{
     if (m_pixelAlign) {
         _checkAlignPixelsAdjustOne(a);
         _checkAlignPixelsAdjustOne(b);
@@ -1582,27 +1676,43 @@ void QNanoPainter::_checkAlignPixelsAdjust(float *a, float *b, float *c, float *
 }
 
 // Align to full pixel
-void QNanoPainter::_checkAlignPixels(float *a, float *b, float *c, float *d) {
+void QNanoPainter::_checkAlignPixels(float* a, float* b, float* c, float* d)
+{
     if (m_pixelAlign) {
-        if (a) *a = (static_cast<int>(*a * m_devicePixelRatio + 0.5f)) / m_devicePixelRatio;
-        if (b) *b = (static_cast<int>(*b * m_devicePixelRatio + 0.5f)) / m_devicePixelRatio;
-        if (c) *c = (static_cast<int>(*c * m_devicePixelRatio + 0.5f)) / m_devicePixelRatio;
-        if (d) *d = (static_cast<int>(*d * m_devicePixelRatio + 0.5f)) / m_devicePixelRatio;
+        if (a)
+            *a = (static_cast<int>(*a * m_devicePixelRatio + 0.5f)) /
+                 m_devicePixelRatio;
+        if (b)
+            *b = (static_cast<int>(*b * m_devicePixelRatio + 0.5f)) /
+                 m_devicePixelRatio;
+        if (c)
+            *c = (static_cast<int>(*c * m_devicePixelRatio + 0.5f)) /
+                 m_devicePixelRatio;
+        if (d)
+            *d = (static_cast<int>(*d * m_devicePixelRatio + 0.5f)) /
+                 m_devicePixelRatio;
     }
 }
 
 // Align text to full pixel
-void QNanoPainter::_checkAlignPixelsText(float *a, float *b) {
+void QNanoPainter::_checkAlignPixelsText(float* a, float* b)
+{
     if (m_pixelAlignText) {
-        if (a) *a = (static_cast<int>(*a * m_devicePixelRatio + 0.5f)) / m_devicePixelRatio;
-        if (b) *b = (static_cast<int>(*b * m_devicePixelRatio + 0.5f)) / m_devicePixelRatio;
+        if (a)
+            *a = (static_cast<int>(*a * m_devicePixelRatio + 0.5f)) /
+                 m_devicePixelRatio;
+        if (b)
+            *b = (static_cast<int>(*b * m_devicePixelRatio + 0.5f)) /
+                 m_devicePixelRatio;
     }
 }
 
-void QNanoPainter::_checkAlignPixelsAdjustOne(float *a) {
+void QNanoPainter::_checkAlignPixelsAdjustOne(float* a)
+{
     if (a) {
         float adjustment = 0.5f / m_devicePixelRatio;
         *a = (static_cast<int>(*a * m_devicePixelRatio)) / m_devicePixelRatio;
-        if (m_pixelAlign == QNanoPainter::PIXEL_ALIGN_HALF) *a += adjustment;
+        if (m_pixelAlign == QNanoPainter::PIXEL_ALIGN_HALF)
+            *a += adjustment;
     }
 }

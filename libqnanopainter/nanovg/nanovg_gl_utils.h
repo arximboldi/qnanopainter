@@ -1,154 +1,203 @@
 //
-// Copyright (c) 2009-2013 Mikko Mononen memon@inside.org
-//
-// This software is provided 'as-is', without any express or implied
-// warranty.  In no event will the authors be held liable for any damages
-// arising from the use of this software.
-// Permission is granted to anyone to use this software for any purpose,
-// including commercial applications, and to alter it and redistribute it
-// freely, subject to the following restrictions:
-// 1. The origin of this software must not be misrepresented; you must not
-//    claim that you wrote the original software. If you use this software
-//    in a product, an acknowledgment in the product documentation would be
-//    appreciated but is not required.
-// 2. Altered source versions must be plainly marked as such, and must not be
-//    misrepresented as being the original software.
-// 3. This notice may not be removed or altered from any source distribution.
+// Copyright (c) 2020 Stylus Labs - see LICENSE.txt
+//   based on nanovg:
+// Copyright (c) 2013 Mikko Mononen memon@inside.org
 //
 #ifndef NANOVG_GL_UTILS_H
 #define NANOVG_GL_UTILS_H
 
-struct NVGLUframebuffer {
-	NVGcontext* ctx;
-	GLuint fbo;
-	GLuint rbo;
-	GLuint texture;
-	int image;
-};
+#ifdef IDE_INCLUDES
+// defines and includes to make IDE useful
+#include "../example/platform.h"
+#define NANOVG_GLES3_IMPLEMENTATION
+#include "nanovg_gl.h"
+#endif
+
 typedef struct NVGLUframebuffer NVGLUframebuffer;
 
 // Helper function to create GL frame buffer to render to.
-void nvgluBindFramebuffer(NVGLUframebuffer* fb);
 NVGLUframebuffer* nvgluCreateFramebuffer(NVGcontext* ctx, int w, int h, int imageFlags);
+int nvgluBindFramebuffer(NVGLUframebuffer* fb);
+void nvgluSetFramebufferSRGB(int enable);
+void nvgluSetFramebufferSize(NVGLUframebuffer* fb, int w, int h, int imageFlags);
 void nvgluDeleteFramebuffer(NVGLUframebuffer* fb);
+int nvgluGetImageHandle(NVGLUframebuffer* fb);
+void nvgluBlitFramebuffer(NVGLUframebuffer* fb, int destFBO);
+void nvgluReadPixels(NVGLUframebuffer* fb, void* dest);
+
+// these are provided so that nanovg + nanovg_gl_utils can be used to draw w/o including GL headers
+void nvgluBindFBO(int fbo);
+void nvgluSetViewport(int x, int y, int w, int h);
+void nvgluSetScissor(int x, int y, int w, int h);
+void nvgluClear(NVGcolor color);
+
+enum NVGimageFlagsGLU {
+  NVGLU_NO_NVG_IMAGE = 1<<24,	// do not create a nanovg image for the texture
+};
 
 #endif // NANOVG_GL_UTILS_H
 
 #ifdef NANOVG_GL_IMPLEMENTATION
 
-#if defined(NANOVG_GL3) || defined(NANOVG_GLES2) || defined(NANOVG_GLES3)
-// FBO is core in OpenGL 3>.
-#	define NANOVG_FBO_VALID 1
-#elif defined(NANOVG_GL2)
-// On OS X including glext defines FBO on GL2 too.
-#	ifdef __APPLE__
-#		include <OpenGL/glext.h>
-#		define NANOVG_FBO_VALID 1
-#	endif
-#endif
+struct NVGLUframebuffer {
+  NVGcontext* ctx;
+  GLuint fbo;
+  //GLuint rbo;
+  GLuint texture;
+  int image;
+  int width;
+  int height;
+};
 
-static GLint defaultFBO = -1;
+// we'll assume FBO functionality is available (as nanovg-2 doesn't work without it)
+
+static const GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 
 NVGLUframebuffer* nvgluCreateFramebuffer(NVGcontext* ctx, int w, int h, int imageFlags)
 {
-#ifdef NANOVG_FBO_VALID
-	GLint defaultFBO;
-	GLint defaultRBO;
-	NVGLUframebuffer* fb = NULL;
+  GLint defaultFBO;
+  //GLint defaultRBO;
+  NVGLUframebuffer* fb = NULL;
 
-	glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFBO);
-	glGetIntegerv(GL_RENDERBUFFER_BINDING, &defaultRBO);
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFBO);
+  //glGetIntegerv(GL_RENDERBUFFER_BINDING, &defaultRBO);
 
-	fb = (NVGLUframebuffer*)malloc(sizeof(NVGLUframebuffer));
-	if (fb == NULL) goto error;
-	memset(fb, 0, sizeof(NVGLUframebuffer));
+  fb = (NVGLUframebuffer*)malloc(sizeof(NVGLUframebuffer));
+  if (fb == NULL) return NULL;
+  memset(fb, 0, sizeof(NVGLUframebuffer));
+  fb->ctx = ctx;
+  // frame buffer object
+  glGenFramebuffers(1, &fb->fbo);
 
-	fb->image = nvgCreateImageRGBA(ctx, w, h, imageFlags | NVG_IMAGE_FLIPY | NVG_IMAGE_PREMULTIPLIED, NULL);
+  if (imageFlags | NVGLU_NO_NVG_IMAGE) {
+    fb->image = -1;
+    if (w <= 0 || h <= 0)
+      return fb;
 
-#if defined NANOVG_GL2
-	fb->texture = nvglImageHandleGL2(ctx, fb->image);
-#elif defined NANOVG_GL3
-	fb->texture = nvglImageHandleGL3(ctx, fb->image);
-#elif defined NANOVG_GLES2
-	fb->texture = nvglImageHandleGLES2(ctx, fb->image);
-#elif defined NANOVG_GLES3
-	fb->texture = nvglImageHandleGLES3(ctx, fb->image);
-#endif
+    glBindFramebuffer(GL_FRAMEBUFFER, fb->fbo);
+    nvgluSetFramebufferSize(fb, w, h, imageFlags);
+  } else {
+    glBindFramebuffer(GL_FRAMEBUFFER, fb->fbo);
+    fb->width = w;
+    fb->height = h;
+    fb->image = nvgCreateImageRGBA(ctx, w, h, imageFlags | NVG_IMAGE_FLIPY | NVG_IMAGE_PREMULTIPLIED, NULL);
+    fb->texture = nvglImageHandle(ctx, fb->image);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb->texture, 0);
+  }
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
 
-	fb->ctx = ctx;
+  if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+    nvgluDeleteFramebuffer(fb);
+    fb = NULL;
+  }
+  glBindFramebuffer(GL_FRAMEBUFFER, defaultFBO);
+  return fb;
+}
 
-	// frame buffer object
-	glGenFramebuffers(1, &fb->fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, fb->fbo);
+// returns previously bound FBO
+int nvgluBindFramebuffer(NVGLUframebuffer* fb)
+{
+  int prevFBO = -1;
+  glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prevFBO);
+  glBindFramebuffer(GL_FRAMEBUFFER, fb->fbo);
+  return prevFBO;
+}
 
-	// render buffer object
-	glGenRenderbuffers(1, &fb->rbo);
-	glBindRenderbuffer(GL_RENDERBUFFER, fb->rbo);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_STENCIL_INDEX8, w, h);
-
-	// combine all
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb->texture, 0);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fb->rbo);
-
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-#ifdef GL_DEPTH24_STENCIL8
-		// If GL_STENCIL_INDEX8 is not supported, try GL_DEPTH24_STENCIL8 as a fallback.
-		// Some graphics cards require a depth buffer along with a stencil.
-		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, w, h);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb->texture, 0);
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, fb->rbo);
-
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-#endif // GL_DEPTH24_STENCIL8
-			goto error;
-	}
-
-	glBindFramebuffer(GL_FRAMEBUFFER, defaultFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, defaultRBO);
-	return fb;
-error:
-	glBindFramebuffer(GL_FRAMEBUFFER, defaultFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, defaultRBO);
-	nvgluDeleteFramebuffer(fb);
-	return NULL;
-#else
-	NVG_NOTUSED(ctx);
-	NVG_NOTUSED(w);
-	NVG_NOTUSED(h);
-	NVG_NOTUSED(imageFlags);
-	return NULL;
+// enable or disable automatic sRGB conversion *if* writing to sRGB framebuffer on desktop GL; for GLES,
+//  GL_FRAMEBUFFER_SRGB is not available and sRGB conversion is enabled iff framebuffer is sRGB
+void nvgluSetFramebufferSRGB(int enable)
+{
+#if defined(NANOVG_GL2) || defined(NANOVG_GL3)
+  enable ? glEnable(GL_FRAMEBUFFER_SRGB) : glDisable(GL_FRAMEBUFFER_SRGB);
 #endif
 }
 
-void nvgluBindFramebuffer(NVGLUframebuffer* fb)
+// assumes nvgluBindFramebuffer() has already been called on fb
+void nvgluSetFramebufferSize(NVGLUframebuffer* fb, int w, int h, int imageFlags)
 {
-#ifdef NANOVG_FBO_VALID
-	if (defaultFBO == -1) glGetIntegerv(GL_FRAMEBUFFER_BINDING, &defaultFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, fb != NULL ? fb->fbo : defaultFBO);
-#else
-	NVG_NOTUSED(fb);
-#endif
+  GLint internalfmt = imageFlags & NVG_IMAGE_SRGB ? GL_SRGB8_ALPHA8 : GL_RGBA8;
+  if(w <= 0 || h <= 0 || (w == fb->width && h == fb->height))
+    return;
+  if(fb->image >= 0) {
+    NVG_LOG("nvgluSetFramebufferSize() can only be used with framebuffer created with NVGLU_NO_NVG_IMAGE.");
+    return;
+  }
+
+  glDeleteTextures(1, &fb->texture);
+  glGenTextures(1, &fb->texture);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, fb->texture);
+  glTexImage2D(GL_TEXTURE_2D, 0, internalfmt, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  //glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, w, h, 0, GL_RGBA, GL_HALF_FLOAT, NULL);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glBindTexture(GL_TEXTURE_2D, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fb->texture, 0);
+  glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+  fb->width = w;
+  fb->height = h;
+}
+
+// assumes FBO (source) is already bound; destFBO is bounds on return
+void nvgluBlitFramebuffer(NVGLUframebuffer* fb, int destFBO)
+{
+  glBindFramebuffer(GL_DRAW_FRAMEBUFFER, destFBO);
+  glBlitFramebuffer(0, 0, fb->width, fb->height, 0, 0, fb->width, fb->height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+  //glInvalidateFramebuffer(GL_READ_FRAMEBUFFER, 1, drawBuffers);
+  glBindFramebuffer(GL_FRAMEBUFFER, destFBO);
+}
+
+void nvgluReadPixels(NVGLUframebuffer* fb, void* dest)
+{
+  // for desktop GL, we could use glGetTexImage
+  glReadPixels(0, 0, fb->width, fb->height, GL_RGBA, GL_UNSIGNED_BYTE, dest);
+}
+
+void nvgluBindFBO(int fbo)
+{
+  glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+}
+
+void nvgluSetViewport(int x, int y, int w, int h)
+{
+  glViewport(x, y, w, h);
+}
+
+void nvgluSetScissor(int x, int y, int w, int h)
+{
+  if(w <= 0 || h <= 0)
+    glDisable(GL_SCISSOR_TEST);
+  else {
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(x, y, w, h);
+  }
+}
+
+void nvgluClear(NVGcolor color)
+{
+  glClearColor(color.r/255.0f, color.g/255.0f, color.b/255.0f, color.a/255.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+}
+
+int nvgluGetImageHandle(NVGLUframebuffer* fb)
+{
+  return fb->image;
 }
 
 void nvgluDeleteFramebuffer(NVGLUframebuffer* fb)
 {
-#ifdef NANOVG_FBO_VALID
-	if (fb == NULL) return;
-	if (fb->fbo != 0)
-		glDeleteFramebuffers(1, &fb->fbo);
-	if (fb->rbo != 0)
-		glDeleteRenderbuffers(1, &fb->rbo);
-	if (fb->image >= 0)
-		nvgDeleteImage(fb->ctx, fb->image);
-	fb->ctx = NULL;
-	fb->fbo = 0;
-	fb->rbo = 0;
-	fb->texture = 0;
-	fb->image = -1;
-	free(fb);
-#else
-	NVG_NOTUSED(fb);
-#endif
+  if (fb == NULL) return;
+  if (fb->fbo != 0)
+    glDeleteFramebuffers(1, &fb->fbo);
+  if (fb->image >= 0)
+    nvgDeleteImage(fb->ctx, fb->image);
+  else
+    glDeleteTextures(1, &fb->texture);
+  fb->ctx = NULL;
+  fb->fbo = 0;
+  fb->texture = 0;
+  fb->image = -1;
+  free(fb);
 }
 
 #endif // NANOVG_GL_IMPLEMENTATION

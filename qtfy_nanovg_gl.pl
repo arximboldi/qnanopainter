@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 #
 # This script reads "nanovg_gl.h", adds "QNANO_GLFWRAPPER" prefix
 # into every OpenGL command and outputs "nanovg_gl_wrapped.h".
